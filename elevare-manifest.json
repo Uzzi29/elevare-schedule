@@ -1,0 +1,13 @@
+{
+  "name": "Elevaré — 12-Month Master Schedule",
+  "short_name": "Elevaré",
+  "description": "12-month master schedule tracker.",
+  "start_url": "/elevare-schedule/",
+  "display": "standalone",
+  "background_color": "#0A0A0A",
+  "theme_color": "#0A0A0A",
+  "icons": [
+    { "src": "elevare-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "elevare-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

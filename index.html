@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elevaré — 12-Month Master Schedule</title>
+  <link rel="manifest" href="elevare-manifest.json"/>
+  <link rel="icon" href="elevare-icon-512.png" type="image/png"/>
+  <link rel="apple-touch-icon" href="elevare-icon-192.png"/>
+  <meta name="theme-color" content="#0A0A0A"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Elevaré"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0A0A0A; font-family: 'Segoe UI', system-ui, sans-serif; color: #F5F5F5; }
+    button { font-family: inherit; }
+    ::-webkit-scrollbar { height: 4px; width: 4px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    /* ── Safe localStorage ─────────────────────────────────────────── */
+    const ls = {
+      get: (k, fb) => { try { const v = localStorage.getItem(k); return v !== null ? JSON.parse(v) : fb; } catch(e) { return fb; } },
+      set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} },
+    };
+
+    const phases = [
+      {
+        id: 0,
+        label: "M0 — FOUNDATION",
+        months: "April – May 2026",
+        dates: "Apr 1 – May 31",
+        color: "#7C3AED",
+        season: "PRE-LAUNCH",
+        brandDays: [
+          { day: 1,  date: "Thu, Apr 2",  task: "Climate",                 detail: "Climate consideration — research how climate affects material & product choices for your target market. Document seasonal demand patterns." },
+          { day: 2,  date: "Mon, Apr 6",  task: "Culture",                 detail: "Culture research — deep dive into cultural context, identity signals, and the community Elevaré speaks to. What does the brand mean to them?" },
+          { day: 3,  date: "Thu, Apr 9",  task: "Market Size",             detail: "Market size analysis — define your addressable market, map the competition landscape, and identify the exact positioning gap Elevaré fills." },
+          { day: 4,  date: "Mon, Apr 13", task: "Design Inspo",            detail: "Design inspiration & mockup — gather visual direction, build a moodboard, and produce initial mockup concepts for at least one product." },
+          { day: 5,  date: "Thu, Apr 16", task: "Packaging",               detail: "Packaging design — develop packaging concepts that align with the brand message, aesthetics, and unboxing experience." },
+          { day: 6,  date: "Mon, Apr 20", task: "Brand Assets",            detail: "Brand assets — finalise logos, colour palette, typography system, and all core brand elements. Everything needed for consistent output." },
+          { day: 7,  date: "Thu, Apr 23", task: "Campaign — Planning",     detail: "Campaign strategy Part 1: Planning — define campaign concept, target audience, goals, and the full narrative arc of the launch." },
+          { day: 8,  date: "Mon, Apr 27", task: "Campaign — Visuals Pt.1", detail: "Campaign strategy Part 2: Visuals — art direction, visual assets, photography and graphic direction. Day 1 of 2." },
+          { day: 9,  date: "Thu, Apr 30", task: "Campaign — Visuals Pt.2", detail: "Campaign strategy Part 2: Visuals — finalise all visual assets, review outputs and refine. Day 2 of 2." },
+          { day: 10, date: "Mon, May 4",  task: "Campaign — Audio Pt.1",   detail: "Campaign strategy Part 3: Audio — develop audio identity, music and sound direction, voiceover concepts. Day 1 of 2." },
+          { day: 11, date: "Thu, May 7",  task: "Campaign — Audio Pt.2",   detail: "Campaign strategy Part 3: Audio — finalise all audio assets and tie them into the visual campaign. Day 2 of 2." },
+          { day: 12, date: "Mon, May 11", task: "Measurement",             detail: "Measurement & tech prep — define KPIs, success metrics, sizing specifications, and performance benchmarks for the launch." },
+          { day: 13, date: "Thu, May 14", task: "Combining w/ AI Pt.1",    detail: "Combine everything with AI — feed all research, assets, and strategy into the AI agents. Begin connecting workflow steps. Day 1 of 2." },
+          { day: 14, date: "Mon, May 18", task: "Combining w/ AI Pt.2",    detail: "Combine everything with AI — refine agent outputs, lock handoffs between steps, run full workflow test. Day 2 of 2." },
+          { day: 15, date: "Thu, May 21", task: "Tech Pack",               detail: "Tech pack — complete the final technical specifications document covering all measurements and production details." },
+          { day: 16, date: "Mon, May 25", task: "Testing & Adjusting",     detail: "Workflow testing — run the full system end-to-end. Identify every friction point and document all issues for fixing." },
+          { day: 17, date: "Thu, May 28", task: "Testing & Adjusting",     detail: "Workflow adjusting — fix all identified issues, refine prompts, re-test every weak point in the chain." },
+          { day: 18, date: "Mon, Jun 1",  task: "Final Test ✓",            detail: "Final clean run-through — system must pass before Month 1 begins. If anything fails, this is the last chance to fix it.", overflow: true },
+        ],
+        purpose: [
+          { day:1, date:"Wed, Apr 1",  task:"Codex — Finish Months 1–4",   detail:"Complete writing all content covering months 1–4 of the Codex framework. Focus on depth and clarity — this becomes your PDF asset later. Document every key principle and insight." },
+          { day:2, date:"Sat, Apr 4",  task:"Codex — Finish Months 5–8",   detail:"Complete months 5–8 of Codex. Review what you wrote yesterday for consistency of voice and structure before continuing. Keep momentum." },
+          { day:3, date:"Wed, Apr 8",  task:"Codex — Finish Months 9–12",  detail:"Complete months 9–12 of Codex. You are now halfway through the book. Do a quick pass on chapters 1–12 to tighten up any loose language." },
+          { day:4, date:"Sat, Apr 11",  task:"Codex — Finish Months 13–16", detail:"Complete months 13–16 of Codex. The framework is deepening here — ensure the content connects back to earlier chapters. Cross-reference key ideas." },
+          { day:5, date:"Wed, Apr 15",  task:"Codex — Finish Months 17–20", detail:"Complete months 17–20 of Codex. You are in the final stretch of the book. Energy and specificity matter most in these closing chapters." },
+          { day:6, date:"Sat, Apr 18",  task:"Codex — Finish Months 21–25", detail:"Complete the final months 21–25 of Codex. Full draft done. Do one complete read-through and flag anything that needs revision. Codex is now a complete manuscript." },
+          { day:7, date:"Wed, Apr 22",  task:"Praxis — Finish Months 1–4",  detail:"Begin Praxis. This book is about application — every chapter should be practical and action-oriented. Complete months 1–4 with a focus on frameworks people can immediately use." },
+          { day:8, date:"Sat, Apr 25",  task:"Praxis — Finish Months 5–8",  detail:"Complete months 5–8 of Praxis. Review consistency with Codex — Praxis should feel like the applied companion to Codex's philosophy." },
+          { day:9, date:"Wed, Apr 29",  task:"Praxis — Finish Months 9–12", detail:"Complete months 9–12 of Praxis. Halfway point. Ensure each chapter has at least one concrete exercise, checklist, or framework the reader can action immediately." },
+          { day:10, date:"Sat, May 2", task:"Praxis — Finish Months 13–16",detail:"Complete months 13–16 of Praxis. The middle-to-late chapters should build on earlier content — show the reader progression, not just isolated ideas." },
+          { day:11, date:"Wed, May 6", task:"Praxis — Finish Months 17–20",detail:"Complete months 17–20 of Praxis. Review the full arc of the book — does it tell a complete journey from beginner to advanced practitioner?" },
+          { day:12, date:"Sat, May 9", task:"Praxis — Finish Months 21–25",detail:"Complete months 21–25 of Praxis. Full draft done. Read through end-to-end and flag edits. Praxis is now a complete manuscript alongside Codex." },
+          { day:13, date:"Wed, May 13", task:"Artifex — Finish Months 1–4", detail:"Begin Artifex. This book is your most creative — about craft, output, and expression. Months 1–4 should establish what it means to create with intention and identity." },
+          { day:14, date:"Sat, May 16", task:"Artifex — Finish Months 5–8", detail:"Complete months 5–8 of Artifex. This book can be more personal and narrative in style — let your own creative journey inform the content." },
+          { day:15, date:"Wed, May 20", task:"Artifex — Finish Months 9–12",detail:"Complete months 9–12 of Artifex. You are in the heart of the book. The chapters here should cover the deepest craft principles — the ones most creators never articulate." },
+          { day:16, date:"Sat, May 23", task:"Artifex — Finish Months 13–16",detail:"Complete months 13–16 of Artifex. Review all three books briefly — Codex, Praxis, Artifex should feel like a trilogy with a clear through-line and shared philosophy." },
+          { day:17, date:"Wed, May 27", task:"Artifex — Finish Months 17–20",detail:"Complete months 17–20 of Artifex. The final chapters should bring everything together — what does it mean to fully embody the Artifex identity?" },
+          { day:18, date:"Sat, May 30", task:"Artifex — Finish Months 21–25",detail:"Complete the final months 21–25 of Artifex. All three manuscripts are now complete. Do a final review of all three books as a complete trilogy. Month 0 purpose work is done." },
+        ],
+        youtube: [
+          { day:1, date:"Sun, Apr 5",  task:"Scripting — Hooks, Storytelling, Writing",    detail:"Study and build your scripting system. Master the hook formula: pattern interrupt, bold claim, or curiosity gap in the first 5 seconds. Learn narrative arcs for YouTube — problem, journey, resolution. Write your first 3 script templates." },
+          { day:2, date:"Tue, Apr 7",  task:"Scene Planning — Background, Props, Details",  detail:"Map out your visual environment. Define your recording space, what props communicate authority and brand, and how to set up a consistent, memorable background. Plan 3 different scene variations for different content types." },
+          { day:3, date:"Sun, Apr 12",  task:"Principle Extraction — Books into Content",    detail:"Take Codex, Praxis, and Artifex and extract the 30 most powerful principles that can become standalone YouTube videos. Each principle becomes a content piece. This is your first content bank — built entirely from your own intellectual property." },
+          { day:4, date:"Tue, Apr 14",  task:"Visuals — Cinematography & AI Image Gen",     detail:"Learn and practise AI image generation for video visuals. Master prompting for consistent visual style. Understand composition rules: rule of thirds, leading lines, depth. Build a library of AI-generated visuals for your first 5 videos." },
+          { day:5, date:"Sun, Apr 19",  task:"Visuals — Lighting Types & Angles",           detail:"Study all key lighting setups: Rembrandt, split, loop, butterfly. Understand how light direction creates mood and perceived quality. Test your current phone camera under different lighting conditions and document what looks best for your face and setting." },
+          { day:6, date:"Tue, Apr 21",  task:"Visuals — Colour Grading & 3-Part Lighting",  detail:"Learn colour temperature (warm vs cool), how to grade footage on phone (CapCut colour tools), and how 3-point lighting (key, fill, back) creates separation and depth. Grade 3 sample clips and compare them to your raw footage." },
+          { day:7, date:"Sun, Apr 26",  task:"Visuals — Set Design & Camera Types",         detail:"Define your final set design. Research camera options for phone creators: lenses, stabilisers, and mounts. Understand how different camera angles affect perceived authority and relatability. Finalise your recording setup." },
+          { day:8, date:"Tue, Apr 28",  task:"Audio — Dialogue Recording via AI Voice",     detail:"Set up ElevenLabs voice cloning. Record your baseline voice sample and train your AI clone. Test the clone across different script styles: educational, narrative, motivational. Understand when to use live recording vs AI voiceover." },
+          { day:9, date:"Sun, May 3",  task:"Audio — Sound Selection & Effects Types",     detail:"Build your sound library. Learn the categories: ambient, transition sounds, accent hits, background music, and emotional underscores. Source royalty-free options from Pixabay, Freesound, and YouTube Audio Library. Tag everything by mood and use case." },
+          { day:10, date:"Tue, May 5", task:"Audio — Sound Editing & Mixing",              detail:"Learn how to layer audio in CapCut: music under voice, sound effects timed to cuts, and how to set levels so music never overpowers dialogue. Edit 2 sample clips with full audio layers and compare against a silent version." },
+          { day:11, date:"Sun, May 10", task:"Post — Editing & Pacing",                    detail:"Study pacing principles: when to cut, jump cuts, b-roll placement, and how to maintain energy across a 5–10 minute video. Edit one full video from raw footage to final cut using your scripting and audio work from this week." },
+          { day:12, date:"Tue, May 12", task:"Post — Motion Graphics & Overlay Design",    detail:"Build your lower-third templates, text overlays, intro/outro animations, and chapter markers in CapCut or Canva. Every graphic element should match Elevaré's brand palette and typography. Create a reusable template file." },
+          { day:13, date:"Sun, May 17", task:"Post — Video Export & Production Settings",  detail:"Learn optimal export settings for YouTube: 1080p minimum, 16:9 ratio, H.264 codec, correct bitrate for phone uploads. Set up your upload checklist: title, description, tags, chapters, thumbnail, end screen. Create an export SOP." },
+          { day:14, date:"Tue, May 19", task:"Post — Thumbnail Design & Graphic Design",   detail:"Study the anatomy of high-CTR thumbnails: contrast, faces, text placement, colour psychology. Design 5 thumbnail templates in Canva that match your brand. A/B test 2 styles mentally against top creators in your niche." },
+          { day:15, date:"Sun, May 24", task:"Finalise — Automate Structure Pt.1",         detail:"Begin connecting your tools into an automated content structure. Map the full workflow: idea → script → AI voice → visuals → edit → thumbnail → upload checklist. Identify which steps can be templated or batched." },
+          { day:16, date:"Tue, May 26", task:"Finalise — Automate Structure Pt.2",         detail:"Build prompt templates for every AI step in the pipeline: scripting prompts, image generation prompts, voice direction notes. Test the full workflow end-to-end on one video — time every step." },
+          { day:17, date:"Sun, May 31", task:"Finalise — Automate Structure Pt.3",         detail:"Refine the workflow based on your test run. Fix every friction point. Write a one-page SOP that captures the entire creation process from blank page to uploaded video. This document runs your channel." },
+          { day:18, date:"Tue, Jun 2", overflow: true, task:"Test — Create Channel & Finalise Setup",     detail:"Create your dupe YouTube channel. Upload your first test video. Fill out all channel metadata: name, description, banner, profile image, links. Verify the upload workflow works end-to-end from phone. Channel is now live and ready for Month 1." },
+        ],
+        milestone: "14 AI agents built & tested. All 3 books complete. Dupe channel posting. Substack live.",
+      },
+      {
+        id: 1,
+        label: "M1 — TEST SYSTEM",
+        months: "June 2026",
+        dates: "Jun 1 – Jun 29",
+        color: "#0369A1",
+        season: "☀️ SUMMER — Internal Real Winter",
+        brandDays: [
+          { day: 1, date: "Mon, Jun 1",  task: "Collection Brief & Theme",    detail: "Define the collection concept, seasonal direction, and core aesthetic. This is your first real production run through the full 14-step AI system. Feed the brief in and document everything." },
+          { day: 2, date: "Thu, Jun 4",  task: "Silhouettes & Product Types", detail: "Generate silhouette options and decide on product types (tees, hoodies, outerwear, etc.) using the system. Document the output quality — note what the AI nails and what it misses." },
+          { day: 3, date: "Mon, Jun 8",  task: "Colour Palette & Fabrics",    detail: "Run colour story and material selections through the system. Test how accurately the AI maintains Elevaré brand identity across every output." },
+          { day: 4, date: "Thu, Jun 11", task: "Graphics & Prints",           detail: "Generate graphics, prints, and embroidery concepts using AI. Assess quality and brand alignment. Every output gets scored and logged." },
+          { day: 5, date: "Mon, Jun 15", task: "Lookbook Assembly",           detail: "Compile all visuals into a cohesive lookbook-style output. Test the system's ability to present a full collection narrative — does it hold together?" },
+          { day: 6, date: "Thu, Jun 18", task: "Campaign Concept",            detail: "Generate campaign concept, mood, narrative, and visual direction through the system. First full campaign draft — see what the AI produces when given the collection context." },
+          { day: 7, date: "Mon, Jun 22", task: "Campaign Visuals",            detail: "Run campaign visual assets through the AI pipeline. Art direction, hero imagery, editorial mockups. Rate every output against the brand standard." },
+          { day: 8, date: "Thu, Jun 25", task: "Campaign Copy & Messaging",   detail: "Generate all campaign copywriting through the system: captions, taglines, product descriptions, email copy. Every word gets reviewed for brand accuracy." },
+          { day: 9, date: "Mon, Jun 29", task: "Full System Audit",           detail: "Review the entire 9-day output end-to-end. Document what the system produced well vs. where it struggled. Build a detailed gap list — this feeds directly into Month 2 refinement." },
+        ],
+        purpose: [
+          { day:1, date:"Wed, Jun 3", task:"Post & Document",                    detail:"Write and publish your first real Substack post. Document everything: how long it took, what friction you hit, what felt natural. This is your baseline — every future post improves from here." },
+          { day:2, date:"Sat, Jun 6", task:"Post & Document",                    detail:"Second post published. Document the process again. Are you faster? Does your format feel consistent? Begin noticing what types of content flow easily vs what requires effort." },
+          { day:3, date:"Wed, Jun 10", task:"Review, Refine & Post",             detail:"Review your first two posts. What got engagement? What fell flat? Refine your format based on what you see, then publish post 3 with those adjustments applied." },
+          { day:4, date:"Sat, Jun 13", task:"Post & Document",                    detail:"Post 4 published. You are building a rhythm now. Document your growing SOP — the exact steps you follow from idea to published post." },
+          { day:5, date:"Wed, Jun 17", task:"Review, Start Automating & Post",   detail:"Review your posting SOP and identify the first steps to automate. Set up a scheduling tool (Substack's built-in scheduler or Buffer free tier). Post 5 published. First automation step in place." },
+          { day:6, date:"Sat, Jun 20", task:"Post, Automate & Adjust",           detail:"Post 6 published using your first automated step. Review how the automation performed and adjust. Every tool you touch should make next week easier than this one." },
+          { day:7, date:"Wed, Jun 24", task:"Post, Refine & Prepare Newsletter", detail:"Post 7 published. Begin mapping your newsletter structure — what will it look like beyond Substack? What sections, what cadence, what tone? Document the plan." },
+          { day:8, date:"Sat, Jun 27", task:"Post & Newsletter Prep",            detail:"Post 8 published. Finalise your newsletter concept: name, tagline, content pillars, ideal reader. This becomes your brief for Month 2 website design. Substack rhythm now established." },
+        ],
+        youtube: [
+          { day:1, date:"Tue, Jun 2", task:"Post Content & Edit",             detail:"Film, edit, and upload your first dupe channel video using your Month 0 workflow. Time yourself. Document every friction point. Your goal is a completed upload — quality is secondary to completing the process." },
+          { day:2, date:"Sun, Jun 7", task:"Post & Edit",                     detail:"Second upload. Apply every lesson from yesterday. Is your editing faster? Is your workflow smoother? Document what changed and what still needs improving." },
+          { day:3, date:"Tue, Jun 9", task:"Post & Review",                   detail:"Third upload. Review analytics from videos 1 and 2 — even early data shows patterns. Note retention drop-off points and what the thumbnails are doing to CTR." },
+          { day:4, date:"Sun, Jun 14", task:"Post & Review",                   detail:"Fourth upload. You now have 4 data points. Begin spotting early patterns: which hooks held attention, which topics got more clicks. Document your observations." },
+          { day:5, date:"Tue, Jun 16", task:"Build Extension & Post Content",  detail:"Begin building the YouTube metric extension. This is your custom tracking layer on top of YouTube Analytics — tracking pause points, rewatch zones, and drop-off by second. Post video 5 simultaneously." },
+          { day:6, date:"Sun, Jun 21", task:"Build Extension & Post",          detail:"Continue extension build. Post video 6. The extension development is happening in parallel with your posting rhythm — don't let one block the other." },
+          { day:7, date:"Tue, Jun 23", task:"Build Extension & Post",          detail:"Extension build continues. Post video 7. By end of this day the extension should have a working prototype you can test on your own viewing behaviour." },
+          { day:8, date:"Sun, Jun 28", task:"Prepare Content in Advance",      detail:"Post video 8. Begin batching: script, plan, and partially edit 2 weeks of future content in advance. The goal is to never be scrambling for content again — always 2 weeks ahead." },
+          { day:9, date:"Tue, Jun 30", task:"Prepare Content in Advance",      detail:"Continue batching content. You should now have a 2-week content buffer ready to schedule. This gives you breathing room to focus on extension refinement in Month 2 without missing uploads." },
+        ],
+        milestone: "Full collection + campaign produced through system. All 9-day gaps documented and ready for refinement.",
+      },
+      {
+        id: 2,
+        label: "M2 — REFINE SYSTEM",
+        months: "July 2026",
+        dates: "Jul 2 – Jul 30",
+        color: "#0D9488",
+        season: "☀️ SUMMER — Internal Real Winter",
+        brandDays: [
+          { day: 1, date: "Thu, Jul 2",  task: "Design Workflow Audit",       detail: "Deep review of all AI design outputs from June. Identify every prompt failure, brand drift, and consistency issue. Score each step of the design pipeline against the target standard." },
+          { day: 2, date: "Mon, Jul 6",  task: "Campaign Workflow Audit",     detail: "Audit all June campaign outputs end-to-end. Document where tone, visuals, or messaging missed the brand mark. Build a clear list of what needs to be fixed vs. what needs to be rebuilt." },
+          { day: 3, date: "Thu, Jul 9",  task: "Prompt Engineering: Design",  detail: "Rewrite and refine all design-related prompts based on the audit findings. Test new versions against June outputs side-by-side. Document the prompt versions that win." },
+          { day: 4, date: "Mon, Jul 13", task: "Prompt Engineering: Campaign",detail: "Rebuild campaign prompts for stronger brand alignment. Test across visuals, copy, and narrative outputs. The goal: consistent brand-accurate results on first pass." },
+          { day: 5, date: "Thu, Jul 16", task: "Workflow Restructure",        detail: "Reorganise agent sequence and handoffs across the full pipeline. Remove redundant steps, close logic gaps, and improve efficiency. Every step must have a clear input and output." },
+          { day: 6, date: "Mon, Jul 20", task: "SOP Documentation",           detail: "Write complete Standard Operating Procedures for every system step. Documented so thoroughly that the process is fully repeatable without your direct involvement in any step." },
+          { day: 7, date: "Thu, Jul 23", task: "System Retest",               detail: "Run a mini-collection (3–4 pieces) through the fully refined system end-to-end. Compare output quality directly against June results — every metric should show improvement." },
+          { day: 8, date: "Mon, Jul 27", task: "Final Refinements",           detail: "Fix all remaining weak points identified in the retest. Lock prompts. Lock SOPs. Confirm system stability across multiple consecutive runs." },
+          { day: 9, date: "Thu, Jul 30", task: "System Sign-Off",             detail: "Final review of all agents, prompts, and workflow steps. Every part of the system must perform near-perfectly. If anything fails here, it gets fixed before Month 3 automation begins." },
+        ],
+        purpose: [
+          { day:1, date:"Wed, Jul 1", task:"Define Website — Design Brief",        detail:"Write the full design brief for your newsletter website. Define: name, tagline, colour palette, typography, sections (hero, about, newsletter signup, paid tier, book previews). Sketch the layout on paper or in Canva. This brief guides everything built in days 5–6." },
+          { day:2, date:"Sat, Jul 4", task:"Define Website — Structure & UX",       detail:"Map the full user journey on the site: visitor lands → reads about → signs up free → gets nurtured → upgrades to paid. Define every page and every CTA. Wire frame the key screens before any code is written." },
+          { day:3, date:"Wed, Jul 8", task:"Review Posts & Adjust Strategy",        detail:"Review all posts published in Month 1. Analyse: which got the most opens, which got replies, which drove Substack follows. Adjust your content strategy based on real data — not assumptions. Write your Month 2 content plan." },
+          { day:4, date:"Sat, Jul 11", task:"Review Posts & Adjust Strategy",        detail:"Continue refining strategy based on Month 1 data. Adjust your post format, headline style, or content angle if the data suggests it. Publish this month's first post with the refined approach." },
+          { day:5, date:"Wed, Jul 15", task:"Build Website — Day 1",                 detail:"Begin building the newsletter website. Use Claude to build the full HTML/CSS/JS structure. Include: hero, email capture form (connected to Substack or your own list), about section, and paid tier CTA. Bake in the tracking infrastructure — section IDs, Intersection Observer, Microsoft Clarity script." },
+          { day:6, date:"Sat, Jul 18", task:"Build Website — Day 2 & Tracking",     detail:"Complete the website build. Verify all tracking is working: scroll depth, section engagement, time-on-page. Deploy to Netlify. Test on phone. The site is now live with intelligence built in from day one." },
+          { day:7, date:"Wed, Jul 22", task:"Automate Posts",                        detail:"Set up full post scheduling automation. Posts should be scheduled 2 weeks in advance with zero manual intervention on publish day. Test the automation end-to-end — from draft to live post without you touching anything." },
+          { day:8, date:"Sat, Jul 25", task:"Automate Posts & Refine",               detail:"Refine the automation. Fix any gaps. Add a review checkpoint so you can approve posts before they go live without disrupting the schedule. Posting is now systematic." },
+          { day:9, date:"Wed, Jul 29", task:"Setup Email Capture — Both Channels",   detail:"Connect email capture on Substack and your newsletter website to a central email list. Set up a welcome automation: subscriber signs up → receives welcome email with your free content → gets nurtured toward paid tier. Both capture points are now live and converting." },
+        ],
+        youtube: [
+          { day:1, date:"Sun, Jul 5", task:"Apply Extension & Review",           detail:"Apply the extension to your dupe channel data. Review the first real output — which seconds of which videos did viewers pause, rewatch, or drop off. This is your first intelligence layer beyond YouTube's native analytics." },
+          { day:2, date:"Tue, Jul 7", task:"Refine Extension & Post",            detail:"Refine the extension based on what you observed. Fix any tracking gaps or display issues. Post your next video. Begin making content decisions informed by extension data — adjust your hooks based on what the data showed." },
+          { day:3, date:"Sun, Jul 12", task:"Refine Process & Automate",          detail:"Review your full content creation process. Identify every manual step that can be templated, batched, or automated. Begin building automations: auto-scheduling posts, AI-assisted script drafts, batch thumbnail creation." },
+          { day:4, date:"Tue, Jul 14", task:"Refine Process & Automate",          detail:"Continue automation build. Post your next video. Every automation you build this week saves you hours every month — treat it as infrastructure investment." },
+          { day:5, date:"Sun, Jul 19", task:"Refine Process & Automate",          detail:"Test all automations end-to-end. Does the full pipeline from idea to scheduled upload now work with minimal manual input? Document every step that still requires you personally and find a way to reduce it." },
+          { day:6, date:"Tue, Jul 21", task:"Refine Process & Automate",          detail:"Final automation refinements. Post your next video. Your content process should now be significantly faster than Month 1. Measure the time savings and document them." },
+          { day:7, date:"Sun, Jul 26", task:"Polish Animation & Extension",       detail:"Polish the extension UI — make the data dashboard clean, readable, and usable on phone. Add any missing metrics. The extension should now feel like a product, not a prototype." },
+          { day:8, date:"Tue, Jul 28", task:"Polish Animation & Extension",       detail:"Final extension polish. Run it against all dupe channel videos to date and generate your first full content performance report. What is working, what is not, and why." },
+        ],
+        milestone: "System near-perfect. All SOPs written and locked. Prompts refined and validated.",
+      },
+      {
+        id: 3,
+        label: "M3 — AUTOMATE",
+        months: "August 2026",
+        dates: "Aug 3 – Aug 31",
+        color: "#15803D",
+        season: "☀️ SUMMER — Internal Real Winter",
+        brandDays: [
+          { day: 1, date: "Mon, Aug 3",  task: "Automation Architecture",    detail: "Map every remaining manual step in the refined workflow. Design automation layers for each step. Define which processes will connect to your app and plan the full integration architecture." },
+          { day: 2, date: "Thu, Aug 6",  task: "Automate Design Pipeline",   detail: "Connect all design agents into a single automated flow. Input = collection brief. Output = full design pack. No manual steps anywhere in the chain — fully autonomous." },
+          { day: 3, date: "Mon, Aug 10", task: "Automate Campaign Pipeline", detail: "Connect campaign agents into one automated sequence. Brief in → full campaign assets out. Test the automation across multiple brief variations to confirm reliability." },
+          { day: 4, date: "Thu, Aug 13", task: "App Integration Planning",   detail: "Define the full architecture for linking the workflow system to your app. Map all data flows, input triggers, output formats, and the event-driven logic connecting each component." },
+          { day: 5, date: "Mon, Aug 17", task: "App Integration Build",      detail: "Begin connecting the workflow system to the app. Start with the core design and campaign pipelines. Build the integration layer and test each connection as it goes live." },
+          { day: 6, date: "Thu, Aug 20", task: "App Integration Testing",    detail: "Test all automated pipelines through the app interface end-to-end. Log every failure point, timeout, and unexpected output. Build a complete fix list." },
+          { day: 7, date: "Mon, Aug 24", task: "Fixes & Stress Testing",     detail: "Fix all integration failures from testing. Then stress test — simulate multiple collections running simultaneously through the system. Everything must hold under load." },
+          { day: 8, date: "Thu, Aug 27", task: "End-to-End Automation Test", detail: "Full production run using only automated pipelines — zero manual input from start to finish. Document every output, every timing, and every edge case. The benchmark for Month 4 onward." },
+          { day: 9, date: "Mon, Aug 31", task: "Automation Sign-Off ✓",      detail: "System fully automated and app-linked. Final state documented and locked. Every agent, prompt, and workflow step is confirmed operational. Ready to enter the legal phase." },
+        ],
+        purpose: [
+          { day:1, date:"Sat, Aug 1", task:"Refine Posts & Fully Automate",      detail:"Final refinement of your Substack posting system. Every post is now drafted, reviewed, and scheduled automatically. You should not need to think about posting logistics — only content quality." },
+          { day:2, date:"Wed, Aug 5", task:"Refine Posts & Fully Automate",      detail:"Stress test the automation. Schedule 3 weeks of posts and let the system run. Monitor without intervening unless something breaks. Document anything that required manual input." },
+          { day:3, date:"Sat, Aug 8", task:"Refine Newsletter & Automate Testing",detail:"Review your newsletter website's email automation. Is the welcome sequence converting? Are subscribers moving toward paid? Adjust email copy, timing, and CTA placement based on open and click data." },
+          { day:4, date:"Wed, Aug 12", task:"Refine Newsletter & Automate Testing",detail:"Run A/B tests on your email subject lines and CTAs. Test two different welcome email angles. Document which performs better and lock in the winner as your permanent sequence." },
+          { day:5, date:"Sat, Aug 15", task:"Debug & Fix Everything Broken",       detail:"Full system audit day. Check every automation: posting, email capture, welcome sequence, website tracking. Fix every broken link, every failed trigger, every gap in the flow. Nothing gets left broken." },
+          { day:6, date:"Wed, Aug 19", task:"Perfect Substack Post System",        detail:"Finalise your Substack posting SOP. The system should now run end-to-end without you touching it. Document the complete workflow for future reference and hand-off." },
+          { day:7, date:"Sat, Aug 22", task:"Connect Newsletter to Automation",    detail:"Connect your newsletter website's publish schedule to your automation system. Set up timed post delivery: at specific dates and times, content goes live on the website automatically — no manual publishing required." },
+          { day:8, date:"Wed, Aug 26", task:"Setup Payment System",                detail:"Integrate a payment layer into your newsletter website. Set up Stripe or Paystack for South African market. Define your paid tier: price point, what subscribers get, and how access is gated. Test a real payment end-to-end." },
+          { day:9, date:"Sat, Aug 29", task:"Setup Payment System & Test",         detail:"Final payment testing. Verify checkout, receipt emails, access gating, and cancellation flow. Test on mobile — your audience is primarily on phone. Payments are now live and operational." },
+        ],
+        youtube: [
+          { day:1, date:"Sun, Aug 2", task:"Review via Extension, Adjust Content", detail:"Full content review using extension data. This month is entirely about reading the data and adjusting. What seconds are viewers rewatching? What sections are they skipping? Every insight becomes a content decision." },
+          { day:2, date:"Tue, Aug 4", task:"Adjust Content Based on Data",         detail:"Apply yesterday's insights. Rewrite your script template based on what retention data showed. If viewers consistently drop at the same point, you have a pacing or relevance problem — fix it." },
+          { day:3, date:"Sun, Aug 9", task:"Adjust Content Based on Data",         detail:"Continue data-informed content adjustments. Post your next video with the updated approach. Compare its retention curve to previous videos within 24 hours of uploading." },
+          { day:4, date:"Tue, Aug 11", task:"Extension Fully Working — Validate",   detail:"Run the extension across all videos posted to date. Generate a full comparative analysis: retention by video, best-performing hooks, average watch time by content type. This is your content intelligence baseline." },
+          { day:5, date:"Sun, Aug 16", task:"Extension Fully Working — Validate",   detail:"Validate the extension outputs against YouTube Studio data for accuracy. Fix any discrepancies. The extension must be reliable before you use it to make decisions on your main channel." },
+          { day:6, date:"Tue, Aug 18", task:"Extension Fully Working — Finalise",   detail:"Final extension validation. Write the documentation for how to use it: what each metric means, how to interpret the dashboard, and how to translate insights into content decisions." },
+          { day:7, date:"Sun, Aug 23", task:"Content System Fully Running",         detail:"By end of this day your dupe channel should be running on its own rhythm: content batched 2 weeks ahead, extension tracking all videos, and posting automated. Month 3 closes with the system fully operational." },
+          { day:8, date:"Tue, Aug 25", task:"Content System Fully Running",         detail:"Final system review. Document the full state of your dupe channel operation: posting cadence, content strategy, extension coverage, and performance benchmarks. This data guides your main channel launch in Month 4." },
+          { day:9, date:"Sun, Aug 30", task:"Extension Sign-Off ✓",                detail:"Extension is fully working and validated. Dupe channel is a self-running data machine. All insights from 3 months of testing are documented and ready to apply to your personal brand channel launch." },
+        ],
+        milestone: "Full automation live. App integration complete. System runs without any manual input.",
+      },
+      {
+        id: 4,
+        label: "M4 — LEGAL",
+        months: "September 2026",
+        dates: "Sep 3 – Sep 30",
+        color: "#B45309",
+        season: "🍂 AUTUMN — External Spring",
+        brandDays: [
+          { day: 1, date: "Thu, Sep 3",  task: "Register Business",           detail: "Research and file business registration in your home country. Confirm business name availability. Submit all required registration documents and obtain your business registration number." },
+          { day: 2, date: "Mon, Sep 7",  task: "Business Structure & Tax",    detail: "Decide on business structure (sole trader, LLC, etc.) based on your country's options. Register for tax with your local tax authority. Understand all obligations from day one — no surprises later." },
+          { day: 3, date: "Thu, Sep 10", task: "Set Up LLC in USA",           detail: "File LLC formation in your chosen US state — Delaware or Wyoming recommended for non-residents. Engage a registered agent service. Obtain EIN (Employer Identification Number) from the IRS for banking and tax purposes." },
+          { day: 4, date: "Mon, Sep 14", task: "Business Bank Account",       detail: "Open a dedicated business bank account. Link to Stripe and PayPal Business for payment processing. Set up accounting software (Wave for free or Xero for advanced). All business money flows through here — no personal mixing." },
+          { day: 5, date: "Thu, Sep 17", task: "Taxes, Records & Compliance", detail: "Set up a full bookkeeping system from day one. Understand US sales tax obligations by state. Research VAT/GST obligations in your home country for digital and physical goods. Build a document filing structure — everything organised and accessible." },
+          { day: 6, date: "Mon, Sep 21", task: "Trademark & IP Protection",   detail: "File USPTO trademark application for the Elevaré brand name and logo (classes 25 for clothing). Copyright all original designs. Research equivalent IP protection in your home country. This secures the brand long-term." },
+          { day: 7, date: "Thu, Sep 24", task: "Permits & Legal Policies",    detail: "Research any required business permits or licences for e-commerce in your country. Draft Terms & Conditions, Privacy Policy (GDPR/CCPA compliant), and a Returns Policy for the website. These are non-negotiable before selling." },
+          { day: 8, date: "Mon, Sep 28", task: "Contracts & Agreements",      detail: "Create manufacturer/supplier agreement templates covering payment terms, quality standards, IP ownership of designs, and dispute resolution. Draft NDA templates for any future collaborators. Build your legal document library." },
+          { day: 9, date: "Thu, Sep 30", task: "Legal Audit & Sign-Off ✓",   detail: "Review all registrations, filings, and documents in one session. Confirm every item is complete and in order. Store everything in a master legal folder (digital + backup). Nothing proceeds to website build without this signed off." },
+        ],
+        purpose: [
+          { day:1, date:"Wed, Sep 2", task:"Email Funnel — Build via Substack",       detail:"Design and activate your full email funnel. Traffic source (Substack post or website) → free lead magnet → email capture → welcome sequence → paid tier offer. Map every step and confirm it is working." },
+          { day:2, date:"Sat, Sep 5", task:"Email Funnel — Data Collection Active",   detail:"Funnel is live. Begin collecting data: open rates, click rates, conversion from free to paid. Set up your tracking dashboard in Google Sheets. Every subscriber's journey is now visible." },
+          { day:3, date:"Wed, Sep 9", task:"Email Funnel — Refine & Optimise",        detail:"Review first batch of funnel data. Where are subscribers dropping off? Adjust your welcome sequence copy, improve your lead magnet CTA, and test a new subject line on your next email." },
+          { day:4, date:"Sat, Sep 12", task:"Email Funnel — Analyse & Scale",          detail:"Analyse the optimised funnel performance. Is the free-to-paid conversion rate improving? Document your conversion benchmarks — this becomes the baseline for scaling decisions." },
+          { day:5, date:"Wed, Sep 16", task:"Build Email Automation — Linked to Newsletter", detail:"Build automated email triggers linked to your newsletter. When a new post publishes → email goes to subscribers automatically. When someone signs up → they enter the nurture sequence immediately. No manual sending ever again." },
+          { day:6, date:"Sat, Sep 19", task:"Build Email Automation — Linked to Newsletter", detail:"Test the full email automation end-to-end. Subscribe with a test account and track every email received. Verify timing, copy, formatting, and links. Fix anything that breaks." },
+          { day:7, date:"Wed, Sep 23", task:"Implement Payment Plans — Newsletter",    detail:"Add payment plan options to your newsletter paid tier. Test: monthly vs annual pricing. Set up Stripe payment links for each tier. Integrate into your email nurture sequence with a clear upgrade CTA." },
+          { day:8, date:"Sat, Sep 26", task:"Implement Payment Plans — Newsletter",    detail:"Test both payment flows end-to-end on mobile. Verify receipt emails, access delivery, and cancellation handling. All payment paths must work flawlessly before scaling traffic." },
+          { day:9, date:"Wed, Sep 30", task:"Payment System Sign-Off ✓",              detail:"Full audit of payment and email systems. Everything is working: funnel is converting, automation is running, payments are processing. The newsletter monetisation infrastructure is complete." },
+        ],
+        youtube: [
+          { day:1, date:"Tue, Sep 1", task:"YouTube Fully Automated & Extension Live",  detail:"Confirm your dupe channel is running fully on automation: content batched, scheduled, posting without manual input. Extension tracking all videos. This is your proof of concept before scaling to the personal brand channel." },
+          { day:2, date:"Sun, Sep 6", task:"Personal Brand — Make AI Clone",            detail:"Record a comprehensive voice sample for ElevenLabs voice cloning — minimum 30 minutes of clear, natural speech. Train your AI voice clone. Test it across different tones: educational, motivational, conversational. This becomes your primary voiceover tool." },
+          { day:3, date:"Tue, Sep 8", task:"Personal Brand — Develop Posting Schedule", detail:"Design the posting schedule for your main personal brand channel. Define: posting frequency, best days and times based on your target audience, content mix (educational vs motivational vs personal story). Lock in the schedule before you launch." },
+          { day:4, date:"Sun, Sep 13", task:"Personal Brand — Posting Strategy & Batch Plan", detail:"Define your content strategy for the personal brand channel based on all data from the dupe channel. What hooks work? What lengths perform best? What topics resonate most? Plan the first month of content in full." },
+          { day:5, date:"Tue, Sep 15", task:"Personal Brand — Visual Representation",    detail:"Build your visual identity as a creator. Create your AI-generated avatar and visual assets that represent you. Design channel art, profile image, and consistent visual language that communicates your brand at a glance." },
+          { day:6, date:"Sun, Sep 20", task:"Personal Brand — Compile All Assets",       detail:"Compile everything: AI clone ready, channel art done, first month's content planned, posting schedule locked, extension ready to apply. Review all assets for consistency. Everything must reflect one cohesive personal brand." },
+          { day:7, date:"Tue, Sep 22", task:"Build Website — Host Assets Pt.1",          detail:"Begin building the website to host your digital products: ebooks, PDFs, courses. Design the product pages, pricing layout, and checkout flow. This site is where all YouTube traffic will be funnelled." },
+          { day:8, date:"Sun, Sep 27", task:"Build Website — Host Assets Pt.2",          detail:"Continue website build. Add your lead magnet landing page, email capture, and free resource section. The website should feel like an extension of your YouTube channel's brand." },
+          { day:9, date:"Tue, Sep 29", task:"Build Website — Host Assets Pt.3",          detail:"Complete the website build. Test all pages on mobile. Verify navigation, load speed, and email capture integration. The site is ready to receive traffic when your personal brand channel launches." },
+        ],
+        milestone: "Business registered. LLC live in USA. Bank account open. Trademark filed. All policies drafted.",
+      },
+      {
+        id: 5,
+        label: "M5 — WEBSITE",
+        months: "October 2026",
+        dates: "Oct 1 – Oct 29",
+        color: "#0891B2",
+        season: "🍂 AUTUMN — External Spring",
+        brandDays: [
+          { day: 1, date: "Thu, Oct 1",  task: "Design Inspo & Brand Dir.",  detail: "Gather website design references that match Elevaré's aesthetic identity. Define the visual language: typography, colour application, layout style, whitespace philosophy. Build a design brief document before writing a single line of code." },
+          { day: 2, date: "Mon, Oct 5",  task: "Feature Map & Wireframes",   detail: "Define all website features in full: product pages, lookbook, cart, checkout, customer accounts, admin dashboard, order management. Wireframe every key screen — nothing gets built that isn't wireframed first." },
+          { day: 3, date: "Thu, Oct 8",  task: "Frontend Build",             detail: "Build the full frontend: homepage, product pages, lookbook gallery, navigation, footer. Mobile-first throughout — Elevaré customers will primarily shop on phone. Brand-accurate design, no compromises on aesthetics." },
+          { day: 4, date: "Mon, Oct 12", task: "Backend & Database",         detail: "Build the backend infrastructure: product database schema, order management system, inventory tracking, customer data management, and all API endpoints. Structure it for scale from day one." },
+          { day: 5, date: "Thu, Oct 15", task: "CMS & Content Integration",  detail: "Integrate content management. Connect the AI-generated product descriptions, campaign images, and lookbook content directly to the site. The workflow system should be able to push new content to the site automatically." },
+          { day: 6, date: "Mon, Oct 19", task: "Auth & File Storage",        detail: "Implement full user authentication: sign-up, login, password reset, customer accounts with order history. Set up cloud file storage (Cloudinary or S3) for all product images and campaign media assets." },
+          { day: 7, date: "Thu, Oct 22", task: "Payments & Checkout",        detail: "Integrate Stripe as the primary payment gateway. Build the full checkout flow: cart → shipping address → payment → order confirmation → email receipt. Test with real card transactions. Add Apple Pay and Google Pay support." },
+          { day: 8, date: "Mon, Oct 26", task: "Admin Dashboard & Analytics",detail: "Build the admin panel: order management, product uploads, inventory control, customer database, and sales dashboard. Integrate Google Analytics or Plausible for traffic. Set up conversion tracking for every key action." },
+          { day: 9, date: "Thu, Oct 29", task: "Domain, SEO & QA ✓",        detail: "Connect the custom domain. Configure SSL. Set up basic SEO: meta tags, structured data for products, sitemap, robots.txt. Full QA test across all pages, all flows, and all payment paths. Site must be pre-order ready before Month 6." },
+        ],
+        purpose: [
+          { day:1, date:"Sat, Oct 3", task:"Automate Everything — Idea to Post",        detail:"Final stage of Substack automation. By end of today, your content pipeline should run: idea captured → AI drafts post → you review → scheduled → published automatically. Minimum manual input at every step." },
+          { day:2, date:"Wed, Oct 7", task:"Automate Everything — Idea to Post",        detail:"Test the full automated pipeline on 3 different post types. Each one should move from concept to scheduled without you doing any manual formatting, tagging, or uploading. Fix every remaining manual step." },
+          { day:3, date:"Sat, Oct 10", task:"Automate Everything — Final Test",          detail:"Full end-to-end automation test. Schedule 4 weeks of content through the pipeline with zero manual intervention. Monitor without touching. Document any step that still requires you." },
+          { day:4, date:"Wed, Oct 14", task:"Build Personal App Connection — Pt.1",      detail:"Begin connecting your newsletter and Substack systems to a personal tracking app (Daily Grind / Elight) so you can review all data from one place on your phone. Define what metrics you need: open rates, subscriber count, revenue, top posts." },
+          { day:5, date:"Sat, Oct 17", task:"Build Personal App Connection — Pt.2",      detail:"Continue building the data connection. Set up API pulls or webhook triggers from your email platform and website into your personal dashboard. Every metric should update automatically." },
+          { day:6, date:"Wed, Oct 21", task:"Build Personal App Connection — Pt.3",      detail:"Test the dashboard with live data. All newsletter metrics now visible in your personal app. Review on phone — this is your command centre for the entire content operation." },
+          { day:7, date:"Sat, Oct 24", task:"Build Personal App Connection — Pt.4",      detail:"Add YouTube data to the dashboard. Your extension data + Substack data + website conversion data all in one view. The full picture of your content ecosystem performance from one screen." },
+          { day:8, date:"Wed, Oct 28", task:"Fully Integrated — System Review",          detail:"Full system integration review. Substack automation running, newsletter website live, payments operational, personal dashboard showing all metrics. Everything is connected. Document the complete state of the system." },
+          { day:9, date:"Sat, Oct 31", task:"Hands-Free Sign-Off ✓",                    detail:"The newsletter system is now fully automated and hands-free. Content posts itself, emails send themselves, payments process automatically, and you monitor everything from your phone. Purpose track is complete." },
+        ],
+        youtube: [
+          { day:1, date:"Sun, Oct 4", task:"Launch Personal Brand Channel",             detail:"Launch your main personal brand YouTube channel today. Upload your first video. Apply the extension immediately so every video is tracked from day one. Post the launch announcement across all platforms." },
+          { day:2, date:"Tue, Oct 6", task:"Finalise Assets — All Formats",            detail:"Finalise all digital assets in their final formats: PDF ebooks, course slides, audio versions, and any bonus materials. Every product must be in its deliverable format — ready to sell, not in draft." },
+          { day:3, date:"Sun, Oct 11", task:"Finalise Assets — All Formats",            detail:"Quality check every asset. Open each file on phone and verify it reads correctly, looks professional, and delivers on its promise. Nothing goes on sale until it passes this review." },
+          { day:4, date:"Tue, Oct 13", task:"Pricing — Finalised",                      detail:"Lock your final pricing across all products: free PDF, low-ticket ebook, mid-ticket course, and high-ticket mentorship/coaching. Research competitor pricing and position accordingly. Price anchoring strategy finalised." },
+          { day:5, date:"Sun, Oct 18", task:"Pricing — Finalised & Loaded",             detail:"Load all pricing into your website. Set up all product pages with correct pricing, descriptions, and checkout links. Run a test purchase for each product tier on mobile." },
+          { day:6, date:"Tue, Oct 20", task:"Legal — Documentation Pt.1",               detail:"Create all required legal documents for selling digital products: Terms of Service, Privacy Policy (POPIA-compliant for South Africa), Refund Policy, and Disclaimer. Claude builds all drafts — you review and customise." },
+          { day:7, date:"Sun, Oct 25", task:"Legal — Documentation Pt.2",               detail:"Add all legal documents to your website in the correct locations: footer links, checkout page disclosures, and email footer. Verify POPIA consent banners are working on all capture forms." },
+          { day:8, date:"Tue, Oct 27", task:"Legal — Finalised & Signed Off",           detail:"Full legal review. All policies live on the website, all products have correct disclaimers, all email captures have consent checkboxes. You are legally protected to sell digital products to a global audience." },
+        ],
+        milestone: "Website live. Payments tested end-to-end. Admin dashboard operational. Domain live with SSL.",
+      },
+      {
+        id: 6,
+        label: "M6 — MANUFACTURING",
+        months: "November 2026",
+        dates: "Nov 2 – Nov 30",
+        color: "#BE185D",
+        season: "🍂 AUTUMN — External Spring",
+        brandDays: [
+          { day: 1, date: "Mon, Nov 2",  task: "Find & Evaluate Manufacturers",detail: "Research and shortlist manufacturers. For custom cut-and-sew: Alibaba, Faire, or direct factory sourcing. For POD test runs: Printful or Printify. Compare MOQs, pricing, quality standards, sampling fees, production timelines, and communication responsiveness. Shortlist your top 3." },
+          { day: 2, date: "Thu, Nov 5",  task: "Pricing Strategy",            detail: "Build the pricing framework: cost of goods (COG) per unit, target margins (aim for 60–70% gross margin minimum), retail pricing, and wholesale pricing if applicable. Model scenarios at 100 units, 500 units, and 1000 units to understand cost curve." },
+          { day: 3, date: "Mon, Nov 9",  task: "Tiered Pricing & Economics",  detail: "Finalise pricing tiers across all product types (tees, hoodies, outerwear, accessories). Factor in: shipping to customer, import duties, packaging cost, Stripe fees (2.9% + 30¢), returns allowance, and ad spend per sale. Every unit must be profitable at minimum order." },
+          { day: 4, date: "Thu, Nov 12", task: "Tech Pack Creation",          detail: "Build complete tech packs for every piece in the collection: exact measurements by size (XS–2XL), fabric composition and weight (GSM), construction specifications, stitching details, colourways with Pantone codes, and print/embroidery placement with exact coordinates." },
+          { day: 5, date: "Mon, Nov 16", task: "AI Mockup Production",        detail: "Generate high-quality AI mockups for all collection pieces using the automated system. Create flat-lay mockups, on-model renders, and close-up detail shots. These are your launch-ready product visuals for the website and campaign." },
+          { day: 6, date: "Thu, Nov 19", task: "Mockup Review & Assets",      detail: "Review all AI mockups against quality standards. Select the final visuals for each product. Compile the full campaign asset library: product images, lookbook shots, campaign hero images, social media formats. Everything organised by product and format." },
+          { day: 7, date: "Mon, Nov 23", task: "Sample Request",              detail: "Submit sample orders to your selected top 2 manufacturers. Include the complete tech pack, Pantone references, fabric swatches if available, and reference images. Request samples for every product in the collection. Confirm production timeline and sample cost." },
+          { day: 8, date: "Thu, Nov 26", task: "Website & AI Integration",    detail: "Final website adjustments and content population. Upload all products with AI-generated descriptions, mockup images, and pricing. Integrate the AI content generation pipeline directly with the site — new products should be publishable in one click from the workflow system." },
+          { day: 9, date: "Mon, Nov 30", task: "Load Test: 20K Users ✓",     detail: "Simulate 20,000 concurrent users hitting the site simultaneously. Test all infrastructure under pressure: web server, database, CDN, checkout flow, Stripe integration, and email confirmation system. Fix every failure. The site must not go down on launch day." },
+        ],
+        purpose: [
+          { day:1, date:"Wed, Nov 4", task:"Review & Adjust — Substack + Newsletter",   detail:"Month 6 purpose work merges with YouTube and Elevaré. Use this session to review the full newsletter system performance over the last 5 months. What metrics grew? What stalled? Document findings." },
+          { day:2, date:"Sat, Nov 7", task:"Review & Adjust — Email Funnel",            detail:"Review email funnel conversion data. Is free-to-paid conversion hitting your target? Adjust the nurture sequence based on 5 months of real subscriber behaviour data." },
+          { day:3, date:"Wed, Nov 11", task:"Asset Creation — Codex PDF Pt.1",           detail:"Begin converting Codex manuscript into a professionally formatted PDF asset. Use Canva or design tool for layout. This becomes both a lead magnet and a paid product." },
+          { day:4, date:"Sat, Nov 14", task:"Asset Creation — Codex PDF Pt.2",           detail:"Continue Codex PDF design. Ensure every page is mobile-readable. Add your brand elements, chapter headers, and visual hierarchy. Codex PDF should feel like a premium product." },
+          { day:5, date:"Wed, Nov 18", task:"Asset Creation — Praxis PDF Pt.1",          detail:"Begin Praxis PDF formatting. Praxis is action-oriented so its layout should reflect that — checklists, frameworks, and exercises should be visually distinct from body text." },
+          { day:6, date:"Sat, Nov 21", task:"Asset Creation — Praxis PDF Pt.2",          detail:"Complete Praxis PDF. Review both Codex and Praxis PDFs side by side — they should feel like a matching pair. Consistent branding, consistent quality." },
+          { day:7, date:"Wed, Nov 25", task:"System Observation — Full Review",          detail:"Full system observation day. Review all three venture streams: newsletter metrics, YouTube performance, Elevaré brand progress. This cross-venture review identifies where to push harder and where to pull back." },
+          { day:8, date:"Sat, Nov 28", task:"Combine — Purpose into YouTube Strategy",   detail:"Begin fusing your newsletter content strategy with your YouTube strategy. Newsletter insights about what resonates with readers directly informs what YouTube content to prioritise. The data talks to itself." },
+          { day:9, date:"Wed, Dec 2", overflow: true, task:"Month 6 Sign-Off — Handoff to Scale",       detail:"Document the complete state of all systems. Purpose track is fully operational and merging into the broader content ecosystem. Month 6 closes with everything running and ready for the scale phase in months 7–12." },
+        ],
+        youtube: [
+          { day:1, date:"Sun, Nov 1", task:"Post Consistently — Personal Channel",      detail:"Personal brand channel is now your primary focus. Post your next video. Every upload is tracked by the extension. Every metric feeds your content intelligence dashboard." },
+          { day:2, date:"Tue, Nov 3", task:"Post & Package Assets",                     detail:"Post video and continue packaging your digital assets. Codex, Praxis, and Artifex are being formatted into sellable products. Post and create simultaneously — the channel drives the audience, the assets monetise them." },
+          { day:3, date:"Sun, Nov 8", task:"Post & Package Assets",                     detail:"Post video. Review asset packaging progress. Every asset format must be finalised this month: PDF, ebook (ePub), and audio version (using your AI voice clone). Three formats per product." },
+          { day:4, date:"Tue, Nov 10", task:"Post & Package Assets",                     detail:"Post video. Review channel analytics — apply extension insights to refine your content approach. Is your personal brand channel outperforming your dupe channel benchmarks? Document the comparison." },
+          { day:5, date:"Sun, Nov 15", task:"Post & Package Assets",                     detail:"Post video. Begin compiling your full offer ecosystem: what is free, what is low-ticket, what is mid-ticket, what is high-ticket. Every asset fits a tier. The ladder is clear." },
+          { day:6, date:"Tue, Nov 17", task:"Post & Package Assets",                     detail:"Post video. All assets should now be packaged and placed in their correct offer tier. Review the complete product suite — does it make sense as a complete offering for your audience?" },
+          { day:7, date:"Sun, Nov 22", task:"Post & Final Asset Review",                 detail:"Post video. Final asset review. Every product is in its deliverable format, placed in the correct tier, priced, and live on your website. The offer ecosystem is complete." },
+          { day:8, date:"Tue, Nov 24", task:"Post & Offers Packaged — Sign-Off",         detail:"Post video. Full review of all offers: free lead magnet, paid ebook, course, mentorship. All are live, priced, and linked from your YouTube channel. Ready for Month 7's distribution phase." },
+          { day:9, date:"Sun, Nov 29", task:"Month 6 Sign-Off — Ready for Launch Phase", detail:"Personal channel posting consistently, extension tracking every video, all digital assets packaged, offers live on website. Month 6 closes with the full creation system operational and the monetisation layer ready to activate." },
+        ],
+        milestone: "Manufacturer selected. Tech packs submitted. Samples requested. Website stress-tested for 20K users.",
+      },
+      {
+        id: 7,
+        label: "M7 — SAMPLES",
+        months: "December 2026",
+        dates: "Dec 3 – Dec 31",
+        color: "#C2410C",
+        season: "❄️ WINTER — External Summer",
+        brandDays: [
+          { day: 1, date: "Thu, Dec 3",  task: "Sample Inspection",          detail: "Inspect all physical samples on arrival. If samples are delayed, use this day to automate campaign scheduling, set up email flows, and pre-load all product content to the website. Every hour is used regardless of manufacturer timing." },
+          { day: 2, date: "Mon, Dec 7",  task: "Sample Assessment",          detail: "Document every fit, quality, and construction issue per piece in a structured format. Photograph every defect with measurements and annotations. Compare each piece against the tech pack spec point by point. Nothing is assumed — everything is verified." },
+          { day: 3, date: "Thu, Dec 10", task: "Send Adjustments",           detail: "Compile all adjustment notes into a clear, numbered revision brief for the manufacturer. Resubmit updated tech packs for any pieces requiring dimensional changes. Confirm the timeline for corrected samples and lock it in writing." },
+          { day: 4, date: "Mon, Dec 14", task: "Campaign Prep Phase 1",      detail: "Begin building launch campaign assets using the automated system. Define final art direction, visual hierarchy across platforms, and the full content plan for launch week. Brief the AI system with the complete context for the collection story." },
+          { day: 5, date: "Thu, Dec 17", task: "Campaign Prep Phase 2",      detail: "Generate all campaign copy, captions, email sequences (pre-launch, launch day, follow-up), and the full social content calendar for the launch period. Produce content for every platform and format." },
+          { day: 6, date: "Mon, Dec 21", task: "Manufacturer Follow-Up",     detail: "Chase manufacturer on the corrected sample timeline. Confirm bulk order pricing at your confirmed production quantity. Lock the production agreement in writing: price per unit, total cost, payment terms, and delivery date. Get everything confirmed before year end." },
+          { day: 7, date: "Thu, Dec 24", task: "Campaign Sign-Off",          detail: "Finalise all campaign visuals, copy, and scheduling. Every piece of content reviewed and approved. Email sequences loaded into the email platform. Social posts scheduled. Everything queued and ready to deploy — one button press launches everything." },
+          { day: 8, date: "Mon, Dec 28", task: "Pre-Launch System Check",    detail: "Full pre-launch audit across every system: website (all products live, checkout working), payments (Stripe live, test transactions passing), campaign (all assets queued), manufacturer (agreement signed, timeline confirmed), inventory plan (pre-order quantities set)." },
+          { day: 9, date: "Thu, Dec 31", task: "Year-End Review ✓",          detail: "Document the full year's progress — every system built, every milestone hit, everything learned. Record the final state of all systems. Write the complete Month 8 launch briefing. Close 2026 with total clarity on what January holds." },
+        ],
+        purpose: [
+          { day:1, date:"Wed, Dec 2", task:"Newsletter Fully Automated",       detail:"Newsletter system is hands-off. Monitor dashboards only. Revenue is consistent and the system generates without your daily involvement." },
+          { day:2, date:"Sat, Dec 5", task:"Audience Growth — Scale",          detail:"Focus growth efforts on expanding the newsletter audience. Leverage YouTube traffic, Substack recommendations, and cross-promotions. Every new subscriber enters the existing automated funnel." },
+          { day:3, date:"Wed, Dec 9", task:"Optimise Conversions",             detail:"Review free-to-paid conversion rates across the full funnel. Identify the biggest drop-off point and run a focused improvement on it this session." },
+          { day:4, date:"Sat, Dec 12", task:"Scale Email Revenue",              detail:"All newsletter systems autonomous and revenue compounding. Strategic oversight only." },
+        ],
+        youtube: [
+          { day:1, date:"Tue, Dec 1", task:"Website Altered — Brand Refresh",          detail:"Update your website to reflect your evolved brand direction. New channel art if needed, updated product positioning, and refined messaging based on 6 months of audience data." },
+          { day:2, date:"Sun, Dec 6", task:"Website Altered — Brand Refresh",          detail:"Complete the website refresh. Every page should now reflect your most current brand voice, offer suite, and positioning. Review on mobile — your audience is on phone." },
+          { day:3, date:"Tue, Dec 8", task:"Website Altered — Brand Refresh",          detail:"Final website review. Share with 3 trusted people for feedback. Apply any critical changes before the free course distribution begins." },
+          { day:4, date:"Sun, Dec 13", task:"Distribute Free Course",                   detail:"Release your free PDF/mini-course to your YouTube audience and newsletter subscribers. This is Month 7's core move — seed the audience with real value before asking for money in Month 8." },
+          { day:5, date:"Tue, Dec 15", task:"Distribute Free Course",                   detail:"Continue free course distribution. Push it through every channel: YouTube description, community post, newsletter, website landing page. Track how many downloads it gets per source." },
+          { day:6, date:"Sun, Dec 20", task:"Email Capture via Course",                 detail:"Ensure every free course download requires an email address. All new subscribers enter your paid offer nurture sequence. The free course is building your Month 8 launch list." },
+          { day:7, date:"Tue, Dec 22", task:"Offers Ready for Launch",                  detail:"All paid offers are finalised, priced, live on website, and linked from YouTube. Review every offer page on mobile one final time. Collect testimonials from anyone who has already used your free content." },
+          { day:8, date:"Sun, Dec 27", task:"Offers Ready for Launch",                  detail:"Brief your audience that something paid is coming. Build anticipation. Share behind-the-scenes of what you've built. Warm the audience before the Month 8 launch." },
+          { day:9, date:"Tue, Dec 29", task:"Review Metrics & Refine",                  detail:"Review all metrics: free course downloads, new email subscribers, YouTube analytics, website traffic. Identify your warmest audience segment — these are your Month 8 first buyers. Document everything for the launch brief." },
+        ],
+        milestone: "Samples reviewed. Adjustments sent to manufacturer. Full launch campaign prepared and queued.",
+      },
+      {
+        id: 8,
+        label: "M8 — LAUNCH",
+        months: "January 2027",
+        dates: "Jan 4 – Feb 1",
+        color: "#1D4ED8",
+        season: "❄️ WINTER — External Summer",
+        brandDays: [
+          { day: 1, date: "Mon, Jan 4",  task: "Campaign Launch Day",        detail: "Deploy everything simultaneously. Email blast to full list, all social posts go live, paid ads activated. Monitor every metric in real time: open rates, CTR, website traffic, add-to-cart rate, pre-order conversion. This is what 9 months of preparation built toward." },
+          { day: 2, date: "Thu, Jan 7",  task: "Campaign Live: Analyse",     detail: "Deep analysis of the first 72 hours. Adjust targeting on paid ads based on early performance data. Reallocate budget toward the creatives and audiences converting best. Respond to every customer comment and DM within the hour." },
+          { day: 3, date: "Mon, Jan 11", task: "Campaign Live: Optimise",    detail: "Continue monitoring and optimising across all platforms. Engage with every piece of audience response. Track pre-order numbers hourly. Identify which products are generating the most demand — this data drives the bulk order decision." },
+          { day: 4, date: "Thu, Jan 14", task: "Paid & Organic Scale",       detail: "Scale paid advertising budget toward the winning ad creatives and highest-converting audiences. Amplify organic content that's performing above benchmark. Every dollar spent must have a tracked return." },
+          { day: 5, date: "Mon, Jan 18", task: "Influencer & Community Push",detail: "Activate any influencer partnerships — send product to key accounts for organic coverage. Push community engagement hard: comments, stories, reposts, UGC. Community trust converts better than paid ads alone." },
+          { day: 6, date: "Thu, Jan 21", task: "Retargeting Campaign",       detail: "Launch retargeting campaigns for all website visitors who didn't convert, cart abandons, and engaged social audiences. Optimise retargeting ads specifically for pre-order conversion — different messaging than top-of-funnel." },
+          { day: 7, date: "Mon, Jan 25", task: "Final Campaign Push",        detail: "Last major push before the bulk order decision point. Create urgency: limited pre-order window, unit caps, or early-bird pricing ends. Compile all pre-order data, demand signals by product, and total revenue captured. This number drives the bulk order." },
+          { day: 8, date: "Thu, Jan 28", task: "Bulk Order Placement",       detail: "Place the bulk production order with the manufacturer based on confirmed pre-order volume and demand data. Overshoot slightly for safety stock. Confirm final pricing, payment schedule, and guaranteed delivery date. Production is now locked." },
+          { day: 9, date: "Mon, Feb 1",  task: "New Collection Brief",       detail: "Begin the next collection immediately. Feed the new season direction into the automated system and run the first full automated pass. While the current collection is in production, the next one is already being built. The machine never stops.", overflow: true },
+        ],
+        purpose: [
+          { day:1, date:"Wed, Jan 6", task:"Substack and newsletter completely automated", detail:"Substack and newsletter completely automated" },
+          { day:2, date:"Sat, Jan 9", task:"Consistent revenue — scaling", detail:"Consistent revenue — scaling" },
+          { day:3, date:"Wed, Jan 13", task:"Product offerings expanding from existing content", detail:"Product offerings expanding from existing content" }
+        ],
+        youtube: [
+          { day:1, date:"Tue, Jan 5", task:"Launch — Testimonials as Leverage",         detail:"Open your paid offers using Month 7 testimonials as front-and-centre social proof. Email your full list first — subscribers are your warmest buyers. Post the launch video on YouTube simultaneously." },
+          { day:2, date:"Sun, Jan 10", task:"Launch — Promote & Sell",                   detail:"Day 2 of the launch. Share testimonials in your YouTube community tab, stories, and email. Respond to every comment and question within the hour. Momentum matters most in the first 48 hours." },
+          { day:3, date:"Tue, Jan 12", task:"Launch — Promote & Sell",                   detail:"Push the mid-ticket course hard today. Show people exactly what they get inside. Walkthroughs, previews, and results from early users. Make the value undeniable." },
+          { day:4, date:"Sun, Jan 17", task:"Launch — Promote & Sell",                   detail:"Launch your coaching/mentorship tier today. Position it as the premium option for people who want direct access. Limited spots — use scarcity honestly." },
+          { day:5, date:"Tue, Jan 19", task:"Launch — Scale What's Converting",          detail:"Identify which offer is converting best and double down. Reallocate your content energy toward promoting that offer. Kill anything that is not converting — don't spread thin." },
+          { day:6, date:"Sun, Jan 24", task:"Launch — Revenue Monitoring",               detail:"Track revenue in real time. Log every sale by product, by traffic source, by day. This data tells you exactly what to repeat and what to scale." },
+          { day:7, date:"Tue, Jan 26", task:"Launch — Final Push",                       detail:"Final big push of the launch. Create urgency: limited spots, price increase, or bonus removal. Email the list one final time. Post one final launch video on YouTube." },
+          { day:8, date:"Sun, Jan 31", task:"Launch Closes — Review & Document",         detail:"Close the launch. Compile all results: total revenue, units sold per offer, conversion rates by source, top-performing content pieces. Write your full launch debrief. This document guides every future launch." },
+        ],
+        milestone: "🚀 Campaign live. Pre-orders captured. Bulk order placed. New collection already in pipeline.",
+      },
+      {
+        id: 9,
+        label: "M9 — PRE-ORDERS",
+        months: "February 2027",
+        dates: "Feb 4 – Mar 4",
+        color: "#7C3AED",
+        season: "❄️ WINTER — External Summer",
+        brandDays: [
+          { day: 1, date: "Thu, Feb 4",  task: "Pre-Order System Live",      detail: "Activate the pre-order purchase flow on the website. Payments capture immediately but no funds are touched — all held in the business account until fulfilment. Announce to the full campaign audience. Monitor the first orders in real time." },
+          { day: 2, date: "Mon, Feb 8",  task: "Pre-Order Monitoring",       detail: "Track order volume, SKUs ordered, size distribution, and total revenue captured. Every order is logged. All funds are held — not a single cent spent until product ships. This discipline is the rule from day one." },
+          { day: 3, date: "Thu, Feb 11", task: "Pre-Order Analysis",         detail: "Analyse patterns in order data: which products are selling fastest, which sizes are in highest demand, which price points convert best. Feed all insights into the next collection planning — this is real customer data driving real decisions." },
+          { day: 4, date: "Mon, Feb 15", task: "New Collection Adj. 1",      detail: "Review the next collection brief (started in Month 8 Day 9). Adjust the design direction based on pre-order performance data — if one product category is dominating orders, double down on that direction for collection 2." },
+          { day: 5, date: "Thu, Feb 18", task: "New Collection Adj. 2",      detail: "Refine product types and silhouettes for the next collection based on demand signals from current pre-orders. Cut products that showed weak interest in the campaign. Add variations of what performed strongest." },
+          { day: 6, date: "Mon, Feb 22", task: "New Collection Adj. 3",      detail: "Update all AI system inputs and prompts for the next collection run. Incorporate every learning from Month 1 (the first system run in June) into the updated prompts. The system improves with every collection." },
+          { day: 7, date: "Thu, Feb 25", task: "New Collection Adj. 4",      detail: "Finalise the updated campaign direction for the next collection. Lock all changes into the automated system. Run a test pass through the full pipeline to confirm the updated system produces improved outputs." },
+          { day: 8, date: "Mon, Mar 1",  task: "New Collection Adj. 5",      detail: "Run the next collection through the updated and fully automated system from brief to complete campaign asset pack. Review all outputs. This is collection 2 taking shape — built almost entirely hands-off.", overflow: true },
+          { day: 9, date: "Thu, Mar 4",  task: "Pre-Order Summary ✓",       detail: "Final pre-order count, total revenue captured, and full system state documented. Manufacturer confirmed on delivery timeline. Pre-order period closed. Ready to enter fulfilment phase in Month 10.", overflow: true },
+        ],
+        purpose: [
+          { day:1, date:"Sat, Feb 6", task:"All newsletter systems fully autonomous", detail:"All newsletter systems fully autonomous" },
+          { day:2, date:"Wed, Feb 10", task:"Audience growth on autopilot", detail:"Audience growth on autopilot" },
+          { day:3, date:"Sat, Feb 13", task:"Scaling paid subscriber revenue", detail:"Scaling paid subscriber revenue" }
+        ],
+        youtube: [
+          { day:1, date:"Sun, Feb 7", task:"Refine — Review Launch Data",      detail:"Deep dive into Month 8 launch results. What offer converted best? What content drove the most sales? What objections came up repeatedly? Every answer refines your next move." },
+          { day:2, date:"Tue, Feb 9", task:"Refine — Content Strategy",        detail:"Adjust your content strategy based on post-launch data. What topics attracted your best buyers? Double down on those. What content attracted non-buyers? Reduce or reframe it." },
+          { day:3, date:"Sun, Feb 14", task:"Refine — Funnel Optimisation",     detail:"Optimise your funnel based on launch data. Tighten your lead magnet → email nurture → offer sequence. Every percentage point improvement in conversion compounds over time." },
+          { day:4, date:"Tue, Feb 16", task:"Refine — Offer Improvements",      detail:"Improve your products based on buyer feedback. What did they love? What was missing? Update your course content, improve your ebook, refine your coaching onboarding." },
+          { day:5, date:"Sun, Feb 21", task:"Refine — Systems Check",           detail:"Full systems check across YouTube channel, email funnel, website, and payment processing. Everything should be running cleanly after the launch stress." },
+          { day:6, date:"Tue, Feb 23", task:"Expand — Platform Research",       detail:"Research which additional platforms make the most sense for your content: Instagram Reels, TikTok, X/Twitter, LinkedIn, or Podcast. Choose based on where your audience already is, not where you want to be." },
+          { day:7, date:"Sun, Feb 28", task:"Expand — Platform Setup",          detail:"Set up profiles on your chosen expansion platforms. Brand them consistently with your YouTube channel. Begin repurposing existing YouTube content into native formats for each platform." },
+          { day:8, date:"Tue, Mar 2", overflow: true, task:"Expand — Content Distribution Live",detail:"Content is now distributing across all chosen platforms automatically. Each platform funnels back to your website and offers. The audience grows from multiple directions simultaneously." },
+        ],
+        milestone: "Pre-order revenue captured and held. New collection workflow fully adjusted and running.",
+      },
+      {
+        id: 10,
+        label: "M10 — SHIP",
+        months: "March 2027",
+        dates: "Mar 8 – Apr 5",
+        color: "#065F46",
+        season: "🌸 SPRING — External Autumn",
+        brandDays: [
+          { day: 1, date: "Mon, Mar 8",  task: "Quality Inspection",         detail: "Receive the bulk order from the manufacturer. Inspect every unit against the tech pack specifications and sample standard. Document all defects by product and severity. Nothing ships until it passes inspection — quality is non-negotiable." },
+          { day: 2, date: "Thu, Mar 11", task: "Begin Fulfilment",           detail: "Start processing and shipping all pre-orders. Pack every order to brand standard — packaging, tissue paper, thank-you card, everything that creates the unboxing moment. Update tracking information in the system for every order shipped." },
+          { day: 3, date: "Mon, Mar 15", task: "Fulfilment Continues",       detail: "Continue shipping. Send proactive tracking updates to all customers. Handle any fulfilment issues (missing items, damage) immediately and generously — first impressions of the brand physically in customers' hands matters most." },
+          { day: 4, date: "Thu, Mar 18", task: "Customer Experience",        detail: "Monitor all delivery statuses. Respond to every customer query within 2 hours. Request reviews and photos from delivered orders. Document every piece of customer feedback — positive and negative — in a structured log." },
+          { day: 5, date: "Mon, Mar 22", task: "Feedback Analysis",          detail: "Compile all customer reviews, returns, exchanges, and direct feedback. Break down by product: what fits perfectly, what runs small, what the fabric feels like in reality vs. expectation. Every data point improves the next collection." },
+          { day: 6, date: "Thu, Mar 25", task: "Product Improvements",       detail: "Document every required product improvement for collection 2: fit adjustments by size, fabric upgrades, construction changes, colourway tweaks. Feed all changes directly into the tech packs and AI system. The next collection is better by default." },
+          { day: 7, date: "Mon, Mar 29", task: "Full Process Review",        detail: "Review the entire Elevaré workflow from Month 0 to today. Map every step taken, every decision made, every result achieved. Document what worked perfectly, what failed, what was slower than expected, and what could be entirely removed." },
+          { day: 8, date: "Thu, Apr 1",  task: "Improvement Roadmap",       detail: "Build the formal improvement roadmap for the next cycle: updated SOPs, refined prompts, improved manufacturer relationships, better quality control checkpoints. Every finding from the full process review becomes an action item.", overflow: true },
+          { day: 9, date: "Mon, Apr 5",  task: "Month 10 Sign-Off ✓",      detail: "All orders shipped and delivered. Customer feedback compiled and actioned. Full process review complete. Improvement roadmap locked. The first complete cycle of Elevaré is done — the second begins with everything upgraded.", overflow: true },
+        ],
+        purpose: [
+          { day:1, date:"Wed, Mar 10", task:"Substack revenue sustaining operations", detail:"Substack revenue sustaining operations" },
+          { day:2, date:"Sat, Mar 13", task:"Content pipeline fully autonomous", detail:"Content pipeline fully autonomous" },
+          { day:3, date:"Wed, Mar 17", task:"Strategic oversight only", detail:"Strategic oversight only" }
+        ],
+        youtube: [
+          { day:1, date:"Tue, Mar 9", task:"Channel Fully Automated",           detail:"YouTube channel runs entirely on automation. AI scripts, AI voice, AI visuals, automated scheduling. You review and approve — you do not produce. The machine creates." },
+          { day:2, date:"Sun, Mar 14", task:"Automation Verification",           detail:"Verify all automation chains are running cleanly across YouTube, email, and website. Every content piece posts on schedule without manual intervention." },
+          { day:3, date:"Tue, Mar 16", task:"Everything Automated in Channel",   detail:"Full channel automation confirmed. Content producing, posting, and funnelling to offers without daily involvement. Monitor dashboards only." },
+          { day:4, date:"Sun, Mar 21", task:"Scale Automation Output",           detail:"Increase content output volume using automation. If automation currently produces 3 videos per week, push to 5. More output, same time investment." },
+          { day:5, date:"Tue, Mar 23", task:"Cross-Platform Automation",         detail:"All platform expansions from Month 9 are now also automated. Content distributes everywhere simultaneously from a single input. True multi-platform presence with minimal overhead." },
+          { day:6, date:"Sun, Mar 28", task:"Revenue Monitoring",                detail:"Monitor all revenue streams: course sales, ebook sales, mentorship bookings, newsletter paid tier. Everything is generating. Document current revenue baseline for Month 11 scaling." },
+          { day:7, date:"Tue, Mar 30", task:"Funnel Optimisation at Scale",      detail:"Optimise conversion rates at scale. Small improvements to a high-traffic funnel compound dramatically. Focus on the one lever with the biggest impact." },
+          { day:8, date:"Sun, Apr 4", task:"Month 10 Sign-Off",                 detail:"Channel fully automated across all platforms. Revenue streams all active. Month 10 closes with the system running at full capacity. Ready to scale income in Month 11." },
+          { day:9, task:"Prepare for Month 11 Teaching Phase",detail:"Begin planning your teaching and mentorship offering for Month 11. Define your coaching methodology, capacity, pricing, and onboarding process. This becomes a significant new revenue stream." },
+        ],
+        milestone: "All orders shipped. Customer feedback analysed. Full cycle review complete. Improvements locked.",
+      },
+      {
+        id: 11,
+        label: "M11 — EQUIPMENT",
+        months: "April 2027",
+        dates: "Apr 8 – May 6",
+        color: "#9333EA",
+        season: "🌸 SPRING — External Autumn",
+        brandDays: [
+          { day: 1, date: "Thu, Apr 8",  task: "LLM Hardware Research",      detail: "Research the hardware required to run local LLMs at production quality: GPU options (RTX 4090, RTX 3090 Ti, or server-grade), RAM requirements (minimum 64GB for serious models), NVMe storage for fast model loading. Compare build-your-own vs. pre-built server options." },
+          { day: 2, date: "Mon, Apr 12", task: "Home Lab Architecture",      detail: "Design your complete private home lab setup: local LLM server configuration, local network architecture, remote access setup, storage hierarchy, and the mobile control interface. Every component chosen for reliability and performance — this infrastructure runs Elevaré permanently." },
+          { day: 3, date: "Thu, Apr 15", task: "Hardware Procurement",       detail: "Purchase all hardware: GPU, motherboard, CPU, RAM, NVMe drives, networking equipment, UPS (uninterruptible power supply), cooling solution. Order everything in one session — confirm delivery timelines and track all orders." },
+          { day: 4, date: "Mon, Apr 19", task: "Home Lab Build",             detail: "Assemble and configure the full home lab. Install the OS (Ubuntu Server recommended). Configure networking, set up remote SSH access, install CUDA drivers, and build the base environment for LLM operation. Test stability under load before installing models." },
+          { day: 5, date: "Thu, Apr 22", task: "LLM Install & Config",       detail: "Install and configure local LLMs using Ollama or LM Studio. Run benchmark tests on multiple models: Llama 3, Mistral, and any specialised fine-tuned models. Begin integrating the best-performing models with the existing Elevaré workflow system." },
+          { day: 6, date: "Mon, Apr 26", task: "Phone Automation Layer",     detail: "Connect the home lab to full mobile automation. Set up remote access via phone (Termius, RustDesk, or similar). Build phone-triggered workflow controls so the entire Elevaré system can be initiated, monitored, and reviewed from a phone from anywhere in the world." },
+          { day: 7, date: "Thu, Apr 29", task: "Collection 2: Progress",     detail: "Return to the collection 2 work in progress. Review all AI outputs generated by the updated automated system. Apply every improvement from the full process review: better prompts, better tech packs, better campaign direction. Collection 2 is already better." },
+          { day: 8, date: "Mon, May 3",  task: "Collection 2: Refine",      detail: "Finalise collection 2 designs, campaign direction, and product specifications. Run the complete collection through the automated system on the new home lab infrastructure. Experience the performance difference of running on private hardware.", overflow: true },
+          { day: 9, date: "Thu, May 6",  task: "Equipment Sign-Off ✓",      detail: "Home lab fully operational and stress-tested. All LLMs running. Phone integration confirmed. Elevaré system now runs on private infrastructure — no cloud dependency, no API costs per run, full control.", overflow: true },
+        ],
+        purpose: [
+          { day:1, date:"Sat, Apr 10", task:"All systems hands-off and compounding", detail:"All systems hands-off and compounding" },
+          { day:2, date:"Wed, Apr 14", task:"Newsletter + website revenue scaling", detail:"Newsletter + website revenue scaling" },
+          { day:3, date:"Sat, Apr 17", task:"Planning next product and content launch", detail:"Planning next product and content launch" }
+        ],
+        youtube: [
+          { day:1, date:"Sun, Apr 11", task:"Full Ecosystem Automated — 24/7",   detail:"Entire content ecosystem runs autonomously: YouTube, all platforms, email, newsletter, and website. Income generates 24 hours a day without daily input from you." },
+          { day:2, date:"Tue, Apr 13", task:"Start Teaching & Coaching",         detail:"Launch your teaching and mentorship offering. Open your first cohort of coaching clients. Position yourself as a practitioner who teaches what they have built — not theory, but documented results." },
+          { day:3, date:"Sun, Apr 18", task:"Coaching — Onboard First Clients",  detail:"Onboard your first coaching clients. Deliver exceptional value in the first session. Everything they receive should be better than what they expected. First impressions set the retention rate." },
+          { day:4, date:"Tue, Apr 20", task:"Coaching — Deliver & Document",     detail:"Deliver coaching sessions and document every insight from client conversations. What questions do they ask? What problems do they have? This becomes content, new products, and improved systems." },
+          { day:5, date:"Sun, Apr 25", task:"Coaching — Systematise Delivery",   detail:"Build a systematised coaching delivery process: onboarding checklist, session templates, resource library, progress tracking. This lets you scale mentorship without burning out." },
+          { day:6, date:"Tue, Apr 27", task:"Mastermind — Planning",             detail:"Begin planning your mastermind group offering. A mastermind is higher-ticket than 1:1 coaching because of the group dynamic and peer value. Define the model, size, cadence, and price." },
+          { day:7, date:"Sun, May 2", task:"Mastermind — Launch",               detail:"Open the mastermind to your audience. Leverage testimonials from coaching clients and course buyers as social proof. The mastermind becomes your highest-ticket recurring revenue stream." },
+          { day:8, date:"Tue, May 4", task:"Revenue Review — All Streams",      detail:"Review all active revenue streams: course, ebooks, coaching, mastermind, newsletter paid tier. Calculate total monthly recurring revenue (MRR). Document for Month 12 annual review." },
+          { day:9, task:"Month 11 Sign-Off — Full Auto",     detail:"Full ecosystem automated and generating. Teaching and mentorship live. All revenue streams active. Month 11 closes as the most complete and powerful month of the entire year." },
+        ],
+        milestone: "Home lab live. Local LLMs running. Full system on private infrastructure. Collection 2 refined.",
+      },
+      {
+        id: 12,
+        label: "M12 — FULL AUTO",
+        months: "May 2027",
+        dates: "May 10 – Jun 7",
+        color: "#DC2626",
+        season: "🌸 SPRING — External Autumn",
+        brandDays: [
+          { day: 1, date: "Mon, May 10", task: "Automation Verification",    detail: "Run collection 2 through the fully automated home lab system from brief to final assets. Zero manual input at any step. Time every stage of the pipeline. Confirm that the system produces launch-ready outputs entirely on its own." },
+          { day: 2, date: "Thu, May 13", task: "Pipeline Quality Check",     detail: "Review all automated outputs against the quality benchmarks established in Month 2. Compare collection 2 output quality to collection 1 — it must be demonstrably better. Log any remaining weak points for immediate fixing." },
+          { day: 3, date: "Mon, May 17", task: "Collection 2 Sign-Off",      detail: "Final approval of all collection 2 pieces. Lock all production specifications. Send to manufacturer for bulk order with complete updated tech packs. Payment terms and delivery timeline confirmed and documented." },
+          { day: 4, date: "Thu, May 20", task: "Campaign Auto-Deployment",   detail: "Run the automated campaign deployment system. The system handles all scheduling, platform posting, ad set creation, and budget allocation — you review and approve only. This is what fully automated brand operation looks like." },
+          { day: 5, date: "Mon, May 24", task: "Drop Day: Collection 2 Live",detail: "Collection 2 goes live on the website. Automated campaign running across all platforms. All systems operational. Monitor performance — not to intervene, but to learn. The Elevaré machine runs itself." },
+          { day: 6, date: "Thu, May 27", task: "Post-Drop Analysis",         detail: "Analyse collection 2 performance against collection 1 benchmarks: conversion rate, average order value, units sold per product, campaign ROAS, revenue in first 48 hours. Build the performance comparison report." },
+          { day: 7, date: "Mon, May 31", task: "Collection 3 Brief",         detail: "Feed the collection 3 brief into the automated system. The cycle begins again — but this time everything is faster, better, and running on private infrastructure with refined prompts and proven processes." },
+          { day: 8, date: "Thu, Jun 3",  task: "System Performance Eval",   detail: "Full end-to-end evaluation of the Elevaré automation system: output quality metrics, pipeline speed, error rate, revenue per collection, time investment required. This becomes the benchmark for all future operations.", overflow: true },
+          { day: 9, date: "Mon, Jun 7",  task: "🏆 Final Sign-Off",         detail: "System is fully autonomous. Multiple collection drops are operational. The workflow, website, manufacturer relationships, campaign system, and home lab infrastructure are all live and running. Elevaré is a machine — not a job.", overflow: true },
+        ],
+        purpose: [
+          { day:1, date:"Wed, May 12", task:"Full autonomy achieved across all systems", detail:"Full autonomy achieved across all systems" },
+          { day:2, date:"Sat, May 15", task:"Scaling revenue across all three tracks", detail:"Scaling revenue across all three tracks" },
+          { day:3, date:"Wed, May 19", task:"Planning the next evolution of the operation", detail:"Planning the next evolution of the operation" }
+        ],
+        youtube: [
+          { day:1, date:"Tue, May 11", task:"Fix & Review — Full Audit",         detail:"Comprehensive audit of the entire 12-month content and YouTube operation. What worked beyond expectation? What underperformed? What would you do differently from Month 1? Document everything with full honesty." },
+          { day:2, date:"Sun, May 16", task:"Fix & Review — Systems Debug",      detail:"Fix every system that is underperforming: weak funnel stages, low-converting offer pages, automated content that needs prompts refreshed. Month 12 is the refinement month — leave everything better than you found it." },
+          { day:3, date:"Tue, May 18", task:"Fix & Review — Content Analysis",   detail:"Full content performance analysis across the year. Review every video by retention, CTR, and revenue generated. Identify your top 10 performing pieces and reverse-engineer why they worked." },
+          { day:4, date:"Sun, May 23", task:"Incorporate — Private LLM Setup",   detail:"Begin setting up your home lab and private LLM infrastructure. Install Ollama or LM Studio. Test Llama 3 or Mistral against your content creation tasks. Begin migrating your AI-powered workflows to run locally." },
+          { day:5, date:"Tue, May 25", task:"Incorporate — Feed All Data to LLM",detail:"Feed all 12 months of data into your private LLM context: content performance data, extension analytics, funnel data, customer feedback, coaching insights. Your private LLM becomes the most informed AI about your business." },
+          { day:6, date:"Sun, May 30", task:"Extension — Prepare for Sale",       detail:"Begin productising the YouTube metric extension for sale to other creators. Clean up the code, write documentation, and design a simple landing page. Your extension is now a product." },
+          { day:7, date:"Tue, Jun 1", overflow: true, task:"Extension — Pricing & Launch Plan", detail:"Define the extension pricing model: one-time purchase, monthly subscription, or freemium. Build the launch plan — who is your buyer, where do you find them, what is the hook?" },
+          { day:8, date:"Sun, Jun 6", overflow: true, task:"Extension — Soft Launch to Audience",detail:"Soft launch the extension to your existing YouTube audience. These are your warmest buyers — they have watched you build it. Gather feedback and early sales data before broader launch." },
+          { day:9, task:"Year 1 Complete — Year 2 Plan ✓",   detail:"Year 1 is complete. Document the full state of your ecosystem: revenue, audience size, automation coverage, products live, coaching clients active, private LLM operational, and extension launched. Write your Year 2 vision. The machine is built — now you scale it." },
+        ],
+        milestone: "🏆 SYSTEM FULLY AUTONOMOUS. Collection 2 dropped. Machine is running. Elevaré is live.",
+      },
+    ];
+
+    const dayTypes = [
+      { key: "brandDays", label: "Mon & Thu", sublabel: "Working Day",    icon: "👔", description: "Clothing Brand (Elevaré)",  color: "#7C3AED" },
+      { key: "purpose",   label: "Wed & Sat",  sublabel: "Purpose Day",    icon: "📖", description: "Codex / Newsletter",        color: "#0369A1" },
+      { key: "youtube",   label: "Tue & Sun",  sublabel: "Creativion Day", icon: "🎬", description: "YouTube Channel",           color: "#BE185D" },
+    ];
+
+    const weekDays = [
+      { d: "MON", c: "#7C3AED", i: "👔" },
+      { d: "TUE", c: "#BE185D", i: "🎬" },
+      { d: "WED", c: "#0369A1", i: "📖" },
+      { d: "THU", c: "#7C3AED", i: "👔" },
+      { d: "FRI", c: "#2a2a2a", i: "🧹" },
+      { d: "SAT", c: "#0369A1", i: "📖" },
+      { d: "SUN", c: "#BE185D", i: "🎬" },
+    ];
+
+    /* ── Export Modal ───────────────────────────────────────────────── */
+    function ExportModal({ content, filename, onClose }) {
+      const [copied, setCopied] = useState(false);
+      const copy = () => {
+        try {
+          navigator.clipboard.writeText(content).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); }).catch(fallback);
+        } catch(e) { fallback(); }
+        function fallback() {
+          try {
+            const ta = document.createElement("textarea");
+            ta.value = content; ta.style.cssText = "position:fixed;opacity:0;top:0;left:0";
+            document.body.appendChild(ta); ta.focus(); ta.select();
+            document.execCommand("copy"); document.body.removeChild(ta);
+            setCopied(true); setTimeout(() => setCopied(false), 2500);
+          } catch(e2) {}
+        }
+      };
+      return (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:16,fontFamily:"'Segoe UI',system-ui,sans-serif"}}
+          onClick={onClose}>
+          <div style={{background:"#141414",border:"1px solid #2a2a2a",borderRadius:14,width:"100%",maxWidth:660,maxHeight:"80vh",display:"flex",flexDirection:"column",overflow:"hidden"}}
+            onClick={e => e.stopPropagation()}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 18px",borderBottom:"1px solid #222",flexShrink:0}}>
+              <div>
+                <div style={{fontSize:12,fontWeight:700,color:"#ddd"}}>{filename}</div>
+                <div style={{fontSize:10,color:"#555",marginTop:2}}>Copy all → paste into a text editor → save as <span style={{color:"#888",fontFamily:"monospace"}}>{filename}</span></div>
+              </div>
+              <div style={{display:"flex",gap:8,flexShrink:0}}>
+                <button onClick={copy}
+                  style={{background:copied?"#14532d":"#1a2a1a",color:copied?"#86efac":"#22c55e",border:"1px solid #22c55e44",borderRadius:8,padding:"7px 16px",cursor:"pointer",fontSize:11,fontWeight:700,minWidth:100,transition:"all 0.2s"}}>
+                  {copied ? "✓ Copied!" : "Copy All"}
+                </button>
+                <button onClick={onClose}
+                  style={{background:"#1a1a1a",color:"#666",border:"1px solid #2a2a2a",borderRadius:8,padding:"7px 12px",cursor:"pointer",fontSize:13,fontWeight:700}}>✕</button>
+              </div>
+            </div>
+            <textarea readOnly value={content}
+              style={{flex:1,background:"#0d0d0d",color:"#888",border:"none",padding:"14px 18px",fontFamily:"'Courier New',monospace",fontSize:10,lineHeight:1.7,resize:"none",outline:"none",overflowY:"auto",minHeight:200}} />
+          </div>
+        </div>
+      );
+    }
+
+    /* ── Dashboard ──────────────────────────────────────────────────── */
+    function Dashboard({ log, checkedCount, xCount, onClose }) {
+      const [exportModal, setExportModal] = useState(null);
+
+      const grouped = {};
+      [...log].reverse().forEach(entry => {
+        const d = (entry.checkedAt || "").split("T")[0];
+        if (d) { if (!grouped[d]) grouped[d] = []; grouped[d].push(entry); }
+      });
+      const days = Object.keys(grouped).sort((a,b) => b.localeCompare(a));
+
+      const fmt = iso => { try { return new Date(iso).toLocaleDateString("en-GB",{weekday:"short",day:"2-digit",month:"short",year:"numeric"}); } catch(e) { return iso||""; } };
+      const fmtT = iso => { try { return new Date(iso).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit"}); } catch(e) { return ""; } };
+      const colName = c => c==="brandDays"?"Working Day":c==="purpose"?"Purpose Day":"Creativion Day";
+
+      const exportCSV = () => {
+        const rows = [["Task","Scheduled Date","Column","Phase","Status","Logged Date","Logged Time"]];
+        [...log].reverse().forEach(e => rows.push([
+          `"${(e.task||"").replace(/"/g,'""')}"`, `"${e.date||""}"`,
+          `"${colName(e.column)}"`, `"${e.phase||""}"`,
+          `"${e.status==="complete"?"Complete":"Incomplete"}"`,
+          `"${fmt(e.checkedAt)}"`, `"${fmtT(e.checkedAt)}"`,
+        ]));
+        setExportModal({ content: rows.map(r=>r.join(",")).join("\n"), filename:`elevare-${new Date().toISOString().split("T")[0]}.csv` });
+      };
+
+      const exportJSON = () => {
+        const data = {
+          exported: new Date().toISOString(), totalLogged: log.length,
+          completed: checkedCount, incomplete: xCount, daysActive: days.length,
+          tasks: [...log].reverse().map(e => ({ task:e.task, scheduledDate:e.date, column:colName(e.column), phase:e.phase, status:e.status==="complete"?"Complete":"Incomplete", loggedAt:e.checkedAt, loggedDate:fmt(e.checkedAt), loggedTime:fmtT(e.checkedAt) }))
+        };
+        setExportModal({ content: JSON.stringify(data, null, 2), filename:`elevare-${new Date().toISOString().split("T")[0]}.json` });
+      };
+
+      return (
+        <div style={{position:"fixed",inset:0,background:"#0A0A0A",zIndex:1000,overflowY:"auto",fontFamily:"'Segoe UI',system-ui,sans-serif",color:"#F5F5F5"}}>
+          {exportModal && <ExportModal content={exportModal.content} filename={exportModal.filename} onClose={()=>setExportModal(null)} />}
+          <div style={{maxWidth:760,margin:"0 auto",padding:"24px 16px 60px"}}>
+
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
+              <div>
+                <div style={{fontSize:9,letterSpacing:3,color:"#555",textTransform:"uppercase",marginBottom:4}}>Elevaré — Completion Log</div>
+                <h2 style={{fontSize:22,fontWeight:800,margin:0,background:"linear-gradient(90deg,#fff 40%,#777)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Dashboard</h2>
+              </div>
+              <button onClick={onClose} style={{background:"#1a1a1a",color:"#aaa",border:"1px solid #333",borderRadius:8,padding:"8px 16px",cursor:"pointer",fontSize:12,fontWeight:700}}>← Back to Schedule</button>
+            </div>
+
+            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:20}}>
+              {[{l:"Completed",v:checkedCount,c:"#22c55e"},{l:"Incomplete",v:xCount,c:"#ef4444"},{l:"Days Active",v:days.length,c:"#0369A1"},{l:"Last Entry",v:log.length>0?fmt(log[log.length-1].checkedAt).split(",")[0]:"—",c:"#7C3AED"}].map(s=>(
+                <div key={s.l} style={{background:"#141414",border:`1px solid ${s.c}33`,borderRadius:12,padding:"14px 8px",textAlign:"center"}}>
+                  <div style={{fontSize:s.l==="Last Entry"?12:22,fontWeight:800,color:s.c,lineHeight:1.2}}>{s.v}</div>
+                  <div style={{fontSize:8,color:"#555",marginTop:5,letterSpacing:1,textTransform:"uppercase"}}>{s.l}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{background:"#111",border:"1px solid #222",borderRadius:12,padding:"14px 16px",marginBottom:24,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
+              <div>
+                <div style={{fontSize:11,fontWeight:700,color:"#ccc",marginBottom:3}}>Export Your Data</div>
+                <div style={{fontSize:10,color:"#444"}}>{log.length} entr{log.length!==1?"ies":"y"} · {checkedCount} complete · {xCount} incomplete · {days.length} active day{days.length!==1?"s":""}</div>
+              </div>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={exportCSV} disabled={log.length===0}
+                  style={{background:log.length===0?"#0f0f0f":"#1a2a1a",color:log.length===0?"#2a2a2a":"#22c55e",border:`1px solid ${log.length===0?"#1a1a1a":"#22c55e33"}`,borderRadius:8,padding:"9px 18px",cursor:log.length===0?"default":"pointer",fontSize:11,fontWeight:700,letterSpacing:0.3}}>
+                  Export CSV
+                </button>
+                <button onClick={exportJSON} disabled={log.length===0}
+                  style={{background:log.length===0?"#0f0f0f":"#1a1a2a",color:log.length===0?"#2a2a2a":"#818cf8",border:`1px solid ${log.length===0?"#1a1a1a":"#818cf833"}`,borderRadius:8,padding:"9px 18px",cursor:log.length===0?"default":"pointer",fontSize:11,fontWeight:700,letterSpacing:0.3}}>
+                  Export JSON
+                </button>
+              </div>
+            </div>
+
+            {log.length === 0 && (
+              <div style={{textAlign:"center",padding:"60px 20px",color:"#2a2a2a",fontSize:13,fontStyle:"italic"}}>No tasks logged yet — use ✓ or ✕ on any task.</div>
+            )}
+            {days.map(day => (
+              <div key={day} style={{marginBottom:20}}>
+                <div style={{fontSize:9,color:"#444",letterSpacing:2,fontWeight:800,textTransform:"uppercase",marginBottom:8,paddingBottom:6,borderBottom:"1px solid #1a1a1a"}}>{fmt(day+"T12:00:00")}</div>
+                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  {grouped[day].map((entry,i) => {
+                    const ok = entry.status === "complete";
+                    const cc = entry.column==="brandDays"?"#7C3AED":entry.column==="purpose"?"#0369A1":"#BE185D";
+                    return (
+                      <div key={i} style={{background:"#141414",border:`1px solid ${ok?"#22c55e1a":"#ef44441a"}`,borderRadius:10,padding:"10px 14px",display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:4}}>
+                            <span style={{fontSize:8,fontWeight:700,color:cc,background:cc+"15",border:`1px solid ${cc}33`,borderRadius:4,padding:"2px 7px",letterSpacing:0.5,whiteSpace:"nowrap"}}>{colName(entry.column)}</span>
+                            <span style={{fontSize:9,color:"#444"}}>{entry.phase}</span>
+                          </div>
+                          <div style={{fontSize:12,fontWeight:700,color:"#ddd"}}>{entry.task}</div>
+                          {entry.date && <div style={{fontSize:10,color:"#3a3a3a",marginTop:2}}>{entry.date}</div>}
+                        </div>
+                        <div style={{textAlign:"right",flexShrink:0,paddingLeft:8}}>
+                          <div style={{fontSize:16,fontWeight:800,color:ok?"#22c55e":"#ef4444"}}>{ok?"✓":"✕"}</div>
+                          <div style={{fontSize:8,color:ok?"#22c55e55":"#ef444455",fontWeight:700,letterSpacing:0.8,marginTop:1}}>{ok?"DONE":"MISSED"}</div>
+                          <div style={{fontSize:9,color:"#444",marginTop:3}}>{fmtT(entry.checkedAt)}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    /* ── Main Schedule ──────────────────────────────────────────────── */
+    function Schedule() {
+      const [activePhase, setActivePhase] = useState(0);
+      const [expandedDay, setExpandedDay] = useState(null);
+      const [showDashboard, setShowDashboard] = useState(false);
+      const [checkedTasks, setCheckedTasks] = useState(() => new Set(ls.get("elv_ck", [])));
+      const [xTasks, setXTasks] = useState(() => new Set(ls.get("elv_x", [])));
+      const [taskLog, setTaskLog] = useState(() => ls.get("elv_log", []));
+
+      useEffect(() => { ls.set("elv_ck", [...checkedTasks]); }, [checkedTasks]);
+      useEffect(() => { ls.set("elv_x", [...xTasks]); }, [xTasks]);
+      useEffect(() => { ls.set("elv_log", taskLog); }, [taskLog]);
+
+      const phase = phases[activePhase];
+      const toggleDay = (id) => setExpandedDay(prev => prev === id ? null : id);
+
+      const markTask = (e, eid, bd, dtKey, phaseName, status) => {
+        e.stopPropagation();
+        const isCheck = status === "complete";
+        const currentSet = isCheck ? checkedTasks : xTasks;
+        const otherSet = isCheck ? xTasks : checkedTasks;
+        const setThis = isCheck ? setCheckedTasks : setXTasks;
+        const setOther = isCheck ? setXTasks : setCheckedTasks;
+
+        if (currentSet.has(eid)) {
+          // Toggle off
+          setThis(prev => { const n = new Set(prev); n.delete(eid); return n; });
+          setTaskLog(log => log.filter(l => l.id !== eid));
+        } else {
+          // Toggle on, clear other
+          setThis(prev => { const n = new Set(prev); n.add(eid); return n; });
+          setOther(prev => { const n = new Set(prev); n.delete(eid); return n; });
+          setTaskLog(log => [...log.filter(l => l.id !== eid), {
+            id: eid, task: bd.task, date: bd.date||"",
+            column: dtKey, phase: phaseName, status,
+            checkedAt: new Date().toISOString(),
+          }]);
+        }
+      };
+
+      if (showDashboard) {
+        return <Dashboard log={taskLog} checkedCount={checkedTasks.size} xCount={xTasks.size} onClose={() => setShowDashboard(false)} />;
+      }
+
+      return (
+        <div style={{ fontFamily: "'Segoe UI', system-ui, sans-serif", background: "#0A0A0A", minHeight: "100vh", color: "#F5F5F5" }}>
+
+          {/* HEADER */}
+          <div style={{ background: "linear-gradient(135deg, #0d0d1a 0%, #111827 50%, #0f1f3d 100%)", padding: "28px 16px 20px", borderBottom: "1px solid #1e1e2e" }}>
+            <div style={{ maxWidth: 960, margin: "0 auto" }}>
+              <div style={{ fontSize: 10, letterSpacing: 3, color: "#555", marginBottom: 6, textTransform: "uppercase" }}>12-Month Master Schedule — Elevaré</div>
+              <h1 style={{ fontSize: 22, fontWeight: 800, margin: "0 0 2px", background: "linear-gradient(90deg, #fff 40%, #777)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                April 1, 2026 → June 2027
+              </h1>
+              <p style={{ color: "#555", margin: "6px 0 0", fontSize: 11 }}>Mon/Thu · Tue/Sun · Wed/Sat · Friday (chores only)</p>
+              <button onClick={() => setShowDashboard(true)}
+                style={{ marginTop: 12, background: "#1a1a1a", color: "#888", border: "1px solid #2a2a2a", borderRadius: 8, padding: "7px 16px", cursor: "pointer", fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                <span>📊</span> Dashboard
+                {checkedTasks.size > 0 && <span style={{ background: "#22c55e1a", color: "#22c55e", borderRadius: 10, padding: "1px 8px", fontSize: 10 }}>{checkedTasks.size} done</span>}
+                {xTasks.size > 0 && <span style={{ background: "#ef44441a", color: "#ef4444", borderRadius: 10, padding: "1px 8px", fontSize: 10 }}>{xTasks.size} missed</span>}
+              </button>
+              <div style={{ display: "flex", gap: 7, marginTop: 14, flexWrap: "wrap" }}>
+                {dayTypes.map(d => (
+                  <div key={d.key} style={{ background: d.color + "15", border: `1px solid ${d.color}40`, borderRadius: 9, padding: "6px 11px", display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 15 }}>{d.icon}</span>
+                    <div>
+                      <div style={{ fontSize: 9, color: d.color, fontWeight: 700, letterSpacing: 0.8 }}>{d.label}</div>
+                      <div style={{ fontSize: 10, color: "#aaa" }}>{d.sublabel} — {d.description}</div>
+                    </div>
+                  </div>
+                ))}
+                <div style={{ background: "#11111188", border: "1px solid #2a2a2a", borderRadius: 9, padding: "6px 11px", display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 15 }}>🧹</span>
+                  <div>
+                    <div style={{ fontSize: 9, color: "#555", fontWeight: 700 }}>Friday</div>
+                    <div style={{ fontSize: 10, color: "#444" }}>Chores Only</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* PHASE TABS */}
+          <div style={{ background: "#0f0f0f", borderBottom: "1px solid #1a1a1a", overflowX: "auto" }}>
+            <div style={{ display: "flex", maxWidth: 960, margin: "0 auto", padding: "0 6px" }}>
+              {phases.map((p, i) => (
+                <button key={p.id} onClick={() => { setActivePhase(i); setExpandedDay(null); }}
+                  style={{ padding: "10px 10px", background: "none", border: "none", borderBottom: activePhase === i ? `3px solid ${p.color}` : "3px solid transparent", color: activePhase === i ? "#fff" : "#3a3a3a", cursor: "pointer", fontSize: 8, fontWeight: 800, letterSpacing: 0.3, whiteSpace: "nowrap", transition: "all 0.15s" }}>
+                  <div style={{ color: activePhase === i ? p.color : "#2a2a2a", fontSize: 7, marginBottom: 3 }}>{p.dates}</div>
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* PHASE BODY */}
+          <div style={{ maxWidth: 960, margin: "0 auto", padding: "20px 14px 40px" }}>
+
+            {/* Phase header */}
+            <div style={{ background: `linear-gradient(135deg, ${phase.color}20, ${phase.color}06)`, border: `1px solid ${phase.color}40`, borderRadius: 14, padding: "16px 20px", marginBottom: 18, display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 8, color: phase.color, letterSpacing: 2, fontWeight: 800, textTransform: "uppercase", marginBottom: 2 }}>{phase.season}</div>
+                <div style={{ fontSize: 9, color: phase.color, letterSpacing: 2, fontWeight: 800, textTransform: "uppercase" }}>{phase.label}</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginTop: 4 }}>{phase.months}</div>
+                <div style={{ fontSize: 11, color: "#666", marginTop: 2 }}>{phase.dates}</div>
+              </div>
+              <div style={{ background: phase.color + "18", border: `1px solid ${phase.color}50`, borderRadius: 10, padding: "10px 14px", maxWidth: 380 }}>
+                <div style={{ fontSize: 8, color: phase.color, fontWeight: 800, letterSpacing: 1.5, marginBottom: 5 }}>🏁 MILESTONE</div>
+                <div style={{ fontSize: 12, color: "#ddd", lineHeight: 1.6 }}>{phase.milestone}</div>
+              </div>
+            </div>
+
+            {/* THREE COLUMNS */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 }}>
+              {dayTypes.map(dt => (
+                <div key={dt.key} style={{ background: "#141414", border: "1px solid #1e1e1e", borderRadius: 14, overflow: "hidden" }}>
+                  <div style={{ background: dt.color + "16", borderBottom: `1px solid ${dt.color}30`, padding: "13px 15px", display: "flex", alignItems: "center", gap: 9 }}>
+                    <span style={{ fontSize: 19 }}>{dt.icon}</span>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 800, color: "#fff" }}>{dt.sublabel}</div>
+                      <div style={{ fontSize: 9, color: dt.color, fontWeight: 600 }}>{dt.label} · {dt.description}</div>
+                    </div>
+                  </div>
+                  <div style={{ padding: "13px 15px" }}>
+                    {phase[dt.key] && phase[dt.key].length > 0 && typeof phase[dt.key][0] === "object" ? (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                        {phase[dt.key].map(bd => {
+                          const eid = `${dt.key}-${phase.id}-${bd.day}`;
+                          const isChecked = checkedTasks.has(eid);
+                          const isX = xTasks.has(eid);
+                          const cardBg = isChecked ? "#0d1a0d" : isX ? "#1a0d0d" : bd.overflow ? "#1a1208" : "#1a1a1a";
+                          const cardBorder = isChecked ? "#22c55e33" : isX ? "#ef444433" : bd.overflow ? "#B4530944" : expandedDay === eid ? dt.color + "55" : "#252525";
+                          return (
+                            <div key={bd.day} onClick={() => toggleDay(eid)}
+                              style={{ background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: 8, padding: "8px 10px", cursor: "pointer", transition: "all 0.15s" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                                {/* Green tick */}
+                                <div onClick={(e) => markTask(e, eid, bd, dt.key, phase.label, "complete")}
+                                  style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${isChecked?"#22c55e":"#2a2a2a"}`, background: isChecked?"#22c55e":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, cursor:"pointer", transition:"all 0.15s" }}>
+                                  {isChecked && <span style={{ fontSize: 10, color: "#000", fontWeight: 900, lineHeight: 1 }}>✓</span>}
+                                </div>
+                                {/* Red X */}
+                                <div onClick={(e) => markTask(e, eid, bd, dt.key, phase.label, "incomplete")}
+                                  style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${isX?"#ef4444":"#2a2a2a"}`, background: isX?"#ef4444":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, cursor:"pointer", transition:"all 0.15s" }}>
+                                  {isX && <span style={{ fontSize: 10, color: "#fff", fontWeight: 900, lineHeight: 1 }}>✕</span>}
+                                </div>
+                                <div style={{ width: 24, height: 24, borderRadius: 6, background: bd.overflow ? "#B4530918" : dt.color + "18", border: `1px solid ${bd.overflow ? "#B4530966" : dt.color + "44"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                  <span style={{ fontSize: 9, fontWeight: 800, color: bd.overflow ? "#B45309" : dt.color }}>{bd.day}</span>
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ display: "flex", justifyContent: "space-between", gap: 4, alignItems: "center" }}>
+                                    <span style={{ fontSize: 11, fontWeight: 700, color: isChecked?"#22c55e":isX?"#ef4444":"#e0e0e0", textDecoration:(isChecked||isX)?"line-through":"none", opacity:(isChecked||isX)?0.65:1 }}>{bd.task}</span>
+                                    {bd.date && <span style={{ fontSize: 9, color: "#3a3a3a", whiteSpace: "nowrap", flexShrink: 0 }}>{bd.date}</span>}
+                                  </div>
+                                  {bd.overflow && <div style={{ fontSize: 8, color: "#B45309", marginTop: 1, fontWeight: 700 }}>⚠ Spills into next month</div>}
+                                </div>
+                                <span style={{ color: "#2a2a2a", fontSize: 9, flexShrink: 0 }}>{expandedDay === eid ? "▲" : "▼"}</span>
+                              </div>
+                              {expandedDay === eid && (
+                                <div style={{ marginTop: 7, paddingTop: 7, borderTop: "1px solid #252525", fontSize: 11, color: "#888", lineHeight: 1.65 }}>
+                                  {bd.detail}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : phase[dt.key] && phase[dt.key].length > 0 ? (
+                      phase[dt.key].map((task, i) => (
+                        <div key={i} style={{ display: "flex", gap: 9, marginBottom: 9, alignItems: "flex-start" }}>
+                          <div style={{ width: 5, height: 5, borderRadius: "50%", background: dt.color, marginTop: 6, flexShrink: 0 }} />
+                          <div style={{ fontSize: 12, color: "#aaa", lineHeight: 1.55 }}>{task}</div>
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{ fontSize: 11, color: "#2a2a2a", fontStyle: "italic", padding: "4px 0" }}>— Continuing on autopilot —</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* WEEKLY RHYTHM */}
+            <div style={{ marginTop: 18, background: "#141414", border: "1px solid #1e1e1e", borderRadius: 12, padding: "14px 16px" }}>
+              <div style={{ fontSize: 8, color: "#333", letterSpacing: 2.5, fontWeight: 800, marginBottom: 10, textTransform: "uppercase" }}>Weekly Rhythm</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+                {weekDays.map(x => (
+                  <div key={x.d} style={{ textAlign: "center", background: x.c + "10", border: `1px solid ${x.c}25`, borderRadius: 7, padding: "7px 2px" }}>
+                    <div style={{ fontSize: 13 }}>{x.i}</div>
+                    <div style={{ fontSize: 7, fontWeight: 800, color: x.c, marginTop: 3, letterSpacing: 0.3 }}>{x.d}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* NAV */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16 }}>
+              <button onClick={() => { setActivePhase(p => Math.max(0, p - 1)); setExpandedDay(null); }} disabled={activePhase === 0}
+                style={{ background: activePhase === 0 ? "#0f0f0f" : "#1a1a1a", color: activePhase === 0 ? "#222" : "#999", border: "1px solid #222", borderRadius: 8, padding: "8px 18px", cursor: activePhase === 0 ? "default" : "pointer", fontSize: 12, fontWeight: 700 }}>
+                ← Previous
+              </button>
+              <span style={{ color: "#2a2a2a", fontSize: 11 }}>{activePhase + 1} / {phases.length}</span>
+              <button onClick={() => { setActivePhase(p => Math.min(phases.length - 1, p + 1)); setExpandedDay(null); }} disabled={activePhase === phases.length - 1}
+                style={{ background: activePhase === phases.length - 1 ? "#0f0f0f" : phase.color, color: activePhase === phases.length - 1 ? "#222" : "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: activePhase === phases.length - 1 ? "default" : "pointer", fontSize: 12, fontWeight: 700 }}>
+                Next →
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<Schedule />);
+  </script>
+</body>
+</html>
